@@ -174,7 +174,7 @@
   <p>🎤 <span class="key">«Темпус»</span> — откат во времени на 7 секунд назад.</p>
   <p>🎤 <span class="key">«Торнадо»</span> — ураган, уничтожающий до 3 препятствий впереди.</p>
   <p>🎤 <span class="key">«Левитация»</span> — 10 секунд паришь в небе.</p>
-  <p>🎤 <span class="key">«Контра Долорем»</span> — самоисцеление.</p>
+  <p>🎤 <span class="key">«Сангуис»</span> — самоисцеление.</p>
   <p>Управление: <span class="key">тап / пробел</span> — прыжок, <span class="key">двойной тап</span> — двойной прыжок.</p>
   <button id="start-btn">Начать игру</button>
 
@@ -2567,7 +2567,7 @@ window.addEventListener('keydown', e=>{
   if (e.code==='Space' || e.code==='ArrowUp'){ onTapJump(e); }
   if (e.code==='KeyG'){ castGhost(); }
   if (e.code==='KeyD'){ castDestroy(); }
-  if (e.code==='KeyH'){ castHeal(); }
+  if (e.code==='KeyH'){ castSanguis(); }
   if (e.code==='KeyM'){ castMagnet(); }
   if (e.code==='KeyT'){ castTempus(); }
   if (e.code==='KeyR'){ castTornado(); }
@@ -2662,18 +2662,18 @@ async function requestMicAndStart(){
   startGame();
 }
 
-function castHeal(){
+function castSanguis(){
   if (!G.running || G.over || G.levelTransition) return;
   G.healBeamTime = HEAL_BEAM_DURATION;
   if (G.health >= G.maxHealth){
-    showSpellName('КОНТРА ДОЛОРЕМ', '#f9a8d4');
+    showSpellName('САНГУИС', '#f9a8d4');
     document.getElementById('spell').textContent = '❤️ Уже полное здоровье!';
     setTimeout(()=>{ document.getElementById('spell').textContent = '✨ Заклинание: готово'; }, 1200);
     return;
   }
   G.health = Math.min(G.maxHealth, G.health + 1);
   startCast('heal');
-  showSpellName('КОНТРА ДОЛОРЕМ', '#f9a8d4');
+  showSpellName('САНГУИС', '#f9a8d4');
   document.getElementById('spell').textContent = '❤️ +1 сердце!';
   setTimeout(()=>{ document.getElementById('spell').textContent = '✨ Заклинание: готово'; }, 1400);
   updateHealthUI();
@@ -2695,8 +2695,8 @@ function castHeal(){
 function handleVoice(txt){
   if (!txt) return;
   const now = performance.now();
-  if (/(контра|кантра|contra)/.test(txt) && /(долорем|долорэм|долор|dolorem|dolor)/.test(txt)){
-    if (now - healCooldown > 450){ healCooldown = now; castHeal(); }
+  if (/(сангуис|сангуи|сангус|sanguis|sangui|sangu)/.test(txt)){
+    if (now - healCooldown > 450){ healCooldown = now; castSanguis(); }
   }
   if (/(фокус|покус|focus|pokus)/.test(txt)){
     if (now - ghostCooldown > 450){ ghostCooldown = now; castGhost(); }
