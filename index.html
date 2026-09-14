@@ -2601,16 +2601,31 @@ function initRecognition(){
   rec.maxAlternatives = 1;
 
   rec.onresult = (e)=>{
-    let text = '';
+    let finalText = '', interimText = '';
     for (let i = e.resultIndex; i < e.results.length; i++){
-      text += e.results[i][0].transcript + ' ';
+      const tr = e.results[i][0].transcript;
+      if (e.results[i].isFinal) finalText += tr + ' ';
+      else interimText += tr + ' ';
     }
-    const clean = text.toLowerCase().replace(/[^а-яёa-z\s]/g,' ').replace(/\s+/g,' ').trim();
-    if (!clean) return;
+    const cleanFinal   = finalText.toLowerCase().replace(/[^а-яёa-z\s]/g,' ').replace(/\s+/g,' ').trim();
+    const cleanInterim = interimText.toLowerCase().replace(/[^а-яёa-z\s]/g,' ').replace(/\s+/g,' ').trim();
+
     const now = performance.now();
-    if (clean === lastVoice && now - lastVoiceTime < 600) return;
-    lastVoice = clean; lastVoiceTime = now;
-    handleVoice(clean);
+
+    // interim — срабатывает почти мгновенно
+    if (cleanInterim){
+      if (!(cleanInterim === lastVoice && now - lastVoiceTime < 250)){
+        lastVoice = cleanInterim; lastVoiceTime = now;
+        handleVoice(cleanInterim);
+      }
+    }
+    // final — на случай, если interim не успел
+    if (cleanFinal){
+      if (!(cleanFinal === lastVoice && now - lastVoiceTime < 250)){
+        lastVoice = cleanFinal; lastVoiceTime = now;
+        handleVoice(cleanFinal);
+      }
+    }
   };
 
   rec.onerror = (e)=>{
@@ -2681,25 +2696,25 @@ function handleVoice(txt){
   if (!txt) return;
   const now = performance.now();
   if (/(контра|кантра|contra)/.test(txt) && /(долорем|долорэм|долор|dolorem|dolor)/.test(txt)){
-    if (now - healCooldown > 1500){ healCooldown = now; castHeal(); }
+    if (now - healCooldown > 450){ healCooldown = now; castHeal(); }
   }
   if (/(фокус|покус|focus|pokus)/.test(txt)){
-    if (now - ghostCooldown > 1500){ ghostCooldown = now; castGhost(); }
+    if (now - ghostCooldown > 450){ ghostCooldown = now; castGhost(); }
   }
   if (/(абракадабра|абракадабр|абракадаб|абракада|абракад|кадабра|abracadabra)/.test(txt)){
-    if (now - destroyCooldown > 1500){ destroyCooldown = now; castDestroy(); }
+    if (now - destroyCooldown > 450){ destroyCooldown = now; castDestroy(); }
   }
   if (/(магнифико|магнифик|магнифи|магни|magnifico|magnific|magnifi)/.test(txt)){
-    if (now - magnetCooldown > 1500){ magnetCooldown = now; castMagnet(); }
+    if (now - magnetCooldown > 450){ magnetCooldown = now; castMagnet(); }
   }
   if (/(темпус|темпу|темп|tempus|tempu|tempor)/.test(txt)){
-    if (now - tempusCooldown > 1500){ tempusCooldown = now; castTempus(); }
+    if (now - tempusCooldown > 450){ tempusCooldown = now; castTempus(); }
   }
   if (/(торнадо|тарнадо|торнад|tornado|tornad|torn)/.test(txt)){
-    if (now - tornadoCooldown > 1500){ tornadoCooldown = now; castTornado(); }
+    if (now - tornadoCooldown > 450){ tornadoCooldown = now; castTornado(); }
   }
   if (/(левитаци|левитац|левита|левит|levitat|levita|levit)/.test(txt)){
-    if (now - levitateCooldown > 1500){ levitateCooldown = now; castLevitate(); }
+    if (now - levitateCooldown > 450){ levitateCooldown = now; castLevitate(); }
   }
 }
 
