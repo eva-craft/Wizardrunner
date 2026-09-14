@@ -110,7 +110,7 @@
     <div class="badge" id="ghost">👻 Бесплотный: —</div>
     <div class="badge" id="magnet">🧲 Магнифико: —</div>
     <div class="badge" id="levitate">🕊 Левитация: —</div>
-    <div class="badge" id="spell">✨ Заклинание: готово</div>
+ <div class="badge" id="spell" style="display:none">✨ Заклинание: готово</div>
   </div>
 </div>
 
@@ -161,7 +161,7 @@ window.addEventListener('resize', resize); resize();
 /* ================= СОСТОЯНИЕ ================= */
 const G = {
   running:false, over:false,
-  t:0, dt:0, speed:200, baseSpeed:200,
+  t:0, dt:0, speed:130, baseSpeed:130,
   score:0, coins:0, distance:0,
   obstacles:[], coinList:[], particles:[], stars:[],
   spawnTimer:1.4, coinTimer:1.0,
@@ -281,7 +281,7 @@ function jump(){
   if (G.levitateTime > 0) return;
   if (G.confuseTime > 0) return; // во время конфуза прыгать нельзя
   if (mage.jumps < 2){
-    mage.vy = mage.jumps === 0 ? -760 : -680;
+  mage.vy = mage.jumps === 0 ? -980 : -880;
     mage.onGround = false;
     mage.jumps++;
     for (let i=0;i<10;i++){
@@ -1317,7 +1317,7 @@ function updateWorld(dt){
 
   // Замедление во время конфуза
   const slowFactor = G.confuseTime > 0 ? 0.35 : 1;
-  G.speed = (G.baseSpeed + Math.min(G.distance*0.015, 160)) * slowFactor;
+  G.speed = (G.baseSpeed + Math.min(G.distance*0.01, 90)) * slowFactor;
 
   G.distance += G.speed*dt;
   G.score = Math.floor(G.distance/10) + G.coins*10;
@@ -1366,7 +1366,7 @@ if (G.landingGrace > 0){
   if (G.spawnTimer <= 0){
     spawnObstacle();
   const base = Math.max(1.6, 2.6 - G.distance*0.0003);
-G.spawnTimer = 2.0 + Math.random()*0.8;
+G.spawnTimer = 8.0 + Math.random()*0.8;
   }
 
   G.coinTimer -= dt;
