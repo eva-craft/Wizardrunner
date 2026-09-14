@@ -118,6 +118,19 @@
          display:flex;flex-direction:column;justify-content:center;align-items:center;
          text-align:center;padding:24px;z-index:20;overflow:hidden;}
 
+#spell-popup{
+  position:fixed;
+  top:42%;              /* было 32% — опустили ниже центра */
+  left:50%;
+  transform:translate(-50%,-50%) scale(0.6);
+ 
+
+}
+
+
+#levelBadge   { top: 340px; }   /* 220 + 120 */
+
+
 </style>
 </head>
 <body>
@@ -155,8 +168,6 @@
 <div id="spell-popup"></div>
 
 <div id="overlay">
-
-  <p>❤️ У тебя <span class="key">5 сердец</span>. При столкновении маг конфузится на 2 секунды и теряет 1 сердце.</p>
   <p>🎤 <span class="key">«Фокус Покус»</span> — бесплотность на 15 секунд.</p>
   <p>🎤 <span class="key">«Абракадабра»</span> — уничтожает ближайшее препятствие.</p>
   <p>🎤 <span class="key">«Магнифико»</span> — магнетизм на 10 секунд.</p>
@@ -166,7 +177,7 @@
   <p>🎤 <span class="key">«Контра Долорем»</span> — самоисцеление.</p>
   <p>Управление: <span class="key">тап / пробел</span> — прыжок, <span class="key">двойной тап</span> — двойной прыжок.</p>
   <button id="start-btn">Начать игру</button>
-  <p class="micro-note">При старте браузер попросит доступ к микрофону —<br>разреши для голосовых заклинаний</p>
+
 </div>
 
 <div id="levelOverlay">
