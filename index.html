@@ -46,25 +46,25 @@
         text-shadow:0 2px 4px #000;white-space:nowrap;text-align:center;}
   .flash{position:fixed;inset:0;pointer-events:none;z-index:8;opacity:0;
          transition:opacity .25s;}
-  #spell-popup{position:fixed;top:32%;left:50%;transform:translate(-50%,-50%) scale(0.6);
-               font-size:44px;font-weight:900;letter-spacing:1px;z-index:15;
-               pointer-events:none;opacity:0;white-space:nowrap;
+  #spell-popup{position:fixed;top:32%;left:50%;
+               transform:translate(-50%,-50%) scale(0.6);
+               font-size:clamp(28px,9vw,54px);font-weight:900;letter-spacing:2px;
+               z-index:15;pointer-events:none;opacity:0;white-space:nowrap;
                text-shadow:0 0 20px currentColor,0 4px 12px #000;
-               transition:opacity .3s, transform .5s cubic-bezier(.2,1.6,.4,1);}
-  #spell-popup.show{opacity:10;transform:translate(-50%,-50%) scale(1);}
+               transition:opacity .3s, transform .5s cubic-bezier(.2,1.6,.4,1);
+               text-align:center;max-width:96vw;}
+  #spell-popup.show{opacity:1;transform:translate(-50%,-50%) scale(1);}
   #timerewind{position:fixed;inset:0;pointer-events:none;z-index:9;opacity:0;
               background:radial-gradient(circle at center, rgba(56,189,248,.15), rgba(56,189,248,.5));
               transition:opacity .2s;}
   #timerewind.active{opacity:1;animation:rewindPulse .6s ease-out;}
   @keyframes rewindPulse{0%{opacity:0;}30%{opacity:1;}100%{opacity:0;}}
-  /* Эффект конфуза */
   #confuse-flash{position:fixed;inset:0;pointer-events:none;z-index:9;opacity:0;
                  background:radial-gradient(circle at center, rgba(239,68,68,0) 30%, rgba(239,68,68,.7));
                  transition:opacity .15s;}
   #confuse-flash.active{animation:confusePulse .5s ease-out;}
   @keyframes confusePulse{0%{opacity:0;}20%{opacity:1;}100%{opacity:0;}}
-  /* Полоска здоровья */
-  #healthbar{position:fixed;top:130px;left:14px;width:180px;height:14px;
+  #healthbar{position:fixed;top:160px;left:14px;width:180px;height:14px;
              background:rgba(0,0,0,.5);border:2px solid rgba(255,255,255,.25);
              border-radius:8px;z-index:6;overflow:hidden;pointer-events:none;}
   #healthfill{height:100%;width:100%;border-radius:5px;
@@ -74,68 +74,49 @@
                      justify-content:center;font-size:11px;font-weight:700;
                      color:#fff;text-shadow:0 1px 2px #000;letter-spacing:1px;}
 
-#overlay{
-  position:fixed;inset:0;background:rgba(5,3,20,.92);
-  display:flex;flex-direction:column;justify-content:flex-start;align-items:center;
-  text-align:center;padding:20px 16px 32px;z-index:20;
-  overflow-y:auto;-webkit-overflow-scrolling:touch;
-}
-#overlay h1{font-size:clamp(22px,6vw,34px);margin:8px 0 6px;
-            background:linear-gradient(135deg,#c084fc,#f472b6,#38bdf8);
-            -webkit-background-clip:text;background-clip:text;color:transparent;}
-#overlay p{margin:4px 0;font-size:clamp(12px,3.4vw,15px);color:#c9c5e8;
-           max-width:480px;line-height:1.4;}
-#overlay .key{color:#facc15;font-weight:700;}
-#overlay button{margin-top:16px;padding:12px 28px;border-radius:40px;border:none;
-                background:linear-gradient(135deg,#7b3fe4,#e94fa1);color:#fff;
-                font-size:clamp(15px,4vw,17px);font-weight:700;
-                box-shadow:0 6px 24px rgba(233,79,161,.5);
-                cursor:pointer;touch-action:manipulation;flex-shrink:0;}
-#overlay button:disabled{opacity:.6;cursor:default;}
-.micro-note{font-size:clamp(11px,3vw,13px);color:#a9a4d4;margin-top:8px;
-            line-height:1.35;margin-bottom:8px;}
+  #levelBadge{position:fixed;top:220px;left:14px;z-index:6;pointer-events:none;}
+  #levelBadge .badge{display:none;}
+  #levelProgress{position:fixed;top:126px;left:14px;width:180px;height:8px;
+                 background:rgba(0,0,0,.5);border:2px solid rgba(255,255,255,.2);
+                 border-radius:6px;z-index:6;overflow:hidden;pointer-events:none;}
+  #levelProgressFill{height:100%;width:0%;border-radius:4px;
+                     background:linear-gradient(90deg,#38bdf8,#a855f7,#f472b6);
+                     transition:width .25s ease-out;}
 
+  #levelOverlay{position:fixed;inset:0;display:none;z-index:30;
+                background:radial-gradient(circle at center, rgba(30,15,60,.85), rgba(5,3,20,.97));
+                flex-direction:column;justify-content:center;align-items:center;
+                text-align:center;padding:24px;overflow-y:auto;}
+  #levelOverlay h2{font-size:clamp(24px,7vw,42px);margin:0 0 6px;
+                   background:linear-gradient(135deg,#facc15,#f472b6,#38bdf8);
+                   -webkit-background-clip:text;background-clip:text;color:transparent;
+                   letter-spacing:1px;}
+  #levelOverlay .sub{font-size:14px;color:#c9c5e8;margin:2px 0 14px;}
+  #levelOverlay .stats{font-size:15px;color:#fff;margin:4px 0;line-height:1.6;}
+  #levelOverlay .key{color:#facc15;font-weight:700;}
+  #levelOverlay button{margin-top:22px;padding:14px 34px;border-radius:40px;border:none;
+                       background:linear-gradient(135deg,#7b3fe4,#e94fa1);color:#fff;
+                       font-size:17px;font-weight:700;
+                       box-shadow:0 6px 24px rgba(233,79,161,.5);cursor:pointer;
+                       touch-action:manipulation;}
+  #levelOverlay .lvlIcon{font-size:64px;margin-bottom:6px;
+                         filter:drop-shadow(0 0 20px rgba(255,255,255,.3));}
 
-button,
-#mic-btn,
-#overlay button {
-  -webkit-tap-highlight-color: transparent; /* убирает синюю/серую вспышку при тапе на iOS/Android */
-  -webkit-touch-callout: none;              /* убирает меню по долгому тапу (iOS) */
-  -webkit-user-select: none;                /* запрет выделения текста */
-  user-select: none;
-  touch-action: manipulation;               /* убирает 300мс задержку и зум по двойному тапу */
-  outline: none;                            /* убирает рамку фокуса */
-  appearance: none;                         /* убирает нативные стили кнопок */
-  -webkit-appearance: none;
-  border-radius: inherit;                   /* чтобы appearance:none не убил скругление — на всякий */
-}
+  #mic-btn,#overlay button,#levelOverlay button{
+    -webkit-tap-highlight-color:transparent;
+    -webkit-touch-callout:none;-webkit-user-select:none;user-select:none;
+    touch-action:manipulation;outline:none;
+    -webkit-appearance:none;appearance:none;
+  }
+  #mic-btn:focus,#mic-btn:focus-visible,#mic-btn:active,
+  #overlay button:focus,#overlay button:focus-visible,#overlay button:active,
+  #levelOverlay button:focus,#levelOverlay button:focus-visible,#levelOverlay button:active{
+    outline:none;
+  }
 
-/* Убираем реакцию на hover/active/focus */
-button:hover,
-button:focus,
-button:focus-visible,
-button:active,
-#mic-btn:hover,
-#mic-btn:focus,
-#mic-btn:active {
-  outline: none;
-  box-shadow: inherit;   /* или впиши свои значения, если хочешь сохранить тень */
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+#overlay{position:fixed;inset:0;background:rgba(5,3,20,.92);
+         display:flex;flex-direction:column;justify-content:center;align-items:center;
+         text-align:center;padding:24px;z-index:20;overflow:hidden;}
 
 </style>
 </head>
@@ -152,15 +133,20 @@ button:active,
     <div class="badge" id="ghost">👻 Бесплотный: —</div>
     <div class="badge" id="magnet">🧲 Магнифико: —</div>
     <div class="badge" id="levitate">🕊 Левитация: —</div>
- <div class="badge" id="spell" style="display:none">✨ Заклинание: готово</div>
+    <div class="badge" id="spell" style="display:none">✨ Заклинание: готово</div>
   </div>
 </div>
+
+<div id="levelBadge">
+  <div class="badge">🗺 <span id="levelName">Волшебная Ночь</span></div>
+  <div class="badge">🎯 Уровень <span id="levelNum">1</span> / 7 · цель <span id="levelGoal">150</span> м</div>
+</div>
+<div id="levelProgress"><div id="levelProgressFill"></div></div>
 
 <div id="healthbar">
   <div id="healthfill"></div>
   <div class="hearts" id="healthtext">❤️ 5 / 5</div>
 </div>
-
 
 <button id="mic-btn">🎤 Включить микрофон</button>
 <div class="flash" id="flash"></div>
@@ -170,19 +156,26 @@ button:active,
 
 <div id="overlay">
   <h1>Wizardrunner</h1>
-  <p>Ты — бегущий маг-путешественник. Прыгай через препятствия, собирай монеты, исследуй бесконечный путь.</p>
-  <p>❤️ У тебя <span class="key">5 сердец</span>. При столкновении маг конфузится на 2 секунды и теряет 1 сердце. Игра заканчивается, когда сердца закончатся.</p>
+  <p>Ты — бегущий маг-путешественник. Пройди <span class="key">7 уровней</span>, собирай монеты, применяй голосовые заклинания.</p>
+  <p>❤️ У тебя <span class="key">5 сердец</span>. При столкновении маг конфузится на 2 секунды и теряет 1 сердце.</p>
   <p>🎤 <span class="key">«Фокус Покус»</span> — бесплотность на 15 секунд.</p>
   <p>🎤 <span class="key">«Абракадабра»</span> — уничтожает ближайшее препятствие.</p>
   <p>🎤 <span class="key">«Магнифико»</span> — магнетизм на 10 секунд.</p>
   <p>🎤 <span class="key">«Темпус»</span> — откат во времени на 7 секунд назад.</p>
   <p>🎤 <span class="key">«Торнадо»</span> — ураган, уничтожающий до 3 препятствий впереди.</p>
   <p>🎤 <span class="key">«Левитация»</span> — 10 секунд паришь в небе.</p>
-
-  <p>🎤 <span class="key">«Контра Долорем»</span> — самоисцеление.</p>  
-<p>Управление: <span class="key">тап / пробел</span> — прыжок, <span class="key">двойной тап</span> — двойной прыжок.</p>
+  <p>🎤 <span class="key">«Контра Долорем»</span> — самоисцеление.</p>
+  <p>Управление: <span class="key">тап / пробел</span> — прыжок, <span class="key">двойной тап</span> — двойной прыжок.</p>
   <button id="start-btn">Начать игру</button>
   <p class="micro-note">При старте браузер попросит доступ к микрофону —<br>разреши для голосовых заклинаний</p>
+</div>
+
+<div id="levelOverlay">
+  <div class="lvlIcon" id="lvlIcon">✨</div>
+  <h2 id="lvlTitle">Уровень пройден!</h2>
+  <p class="sub" id="lvlSub">Волшебная Ночь</p>
+  <p class="stats" id="lvlStats"></p>
+  <button id="lvlNextBtn">Дальше</button>
 </div>
 
 <script>
@@ -200,15 +193,124 @@ function resize(){
 }
 window.addEventListener('resize', resize); resize();
 
+/* ================= УРОВНИ ================= */
+const LEVELS = [
+  {
+    id: 0, name: 'Волшебная Ночь', icon: '🌙',
+    goal: 500,
+    sky: ['#1a0f3a','#2a1a55','#0b0a1a'],
+    ground: ['#2a1d4f','#1a1235','#0b0a1a'],
+    accent: 'rgba(124,95,214,.9)',
+    moon: '#fdf3d0',
+    stars: true,
+   obstacleTypes: ['rock','spike','crystal','pillar'], 
+    speedMul: 1.00,
+    spawnMin: 1.6, spawnMax: 2.4,
+    coinRate: 1.6,
+    doubleSpawnChance: 0.00,
+    desc: 'Ночной лес. Разомнись и привыкни к ритму.'
+  },
+  {
+    id: 1, name: 'Пустыня Кудесников', icon: '🏜',
+    goal: 700,
+    sky: ['#3a1a05','#7a3a10','#c98a3a'],
+    ground: ['#b07a3a','#7a4a1a','#2a1505'],
+    accent: 'rgba(251,191,36,.95)',
+    moon: '#fff2c0',
+    stars: false,
+     obstacleTypes: ['cactus','sandtower'],
+    speedMul: 1.10,
+    spawnMin: 1.3, spawnMax: 2.0,
+    coinRate: 1.5,
+    doubleSpawnChance: 0.10,
+    desc: 'Раскалённый песок, кактусы и обелиски. Прыгай выше!'
+  },
+  {
+    id: 2, name: 'Академия Волшебства', icon: '🏰',
+    goal: 900,
+    sky: ['#0a1a3a','#123a6a','#3a6aa0'],
+    ground: ['#2a3a5a','#1a2540','#0a0f1a'],
+    accent: 'rgba(96,165,250,.95)',
+    moon: '#e0ecff',
+    stars: true,
+    obstacleTypes: ['bookshelf','cauldron','crystal'], // кристалл — магический, вписывается
+    speedMul: 1.20,
+    spawnMin: 1.1, spawnMax: 1.7,
+    coinRate: 1.4,
+    doubleSpawnChance: 0.18,
+    desc: 'Замок, сады и библиотеки. Здесь учат магии — и проверяют на прочность.'
+  },
+  {
+    id: 3, name: 'Вулкан Колдунов', icon: '🌋',
+    goal: 1100,
+    sky: ['#2a0505','#5a0a05','#a01a05'],
+    ground: ['#3a0a05','#1a0505','#0a0000'],
+    accent: 'rgba(239,68,68,.95)',
+    moon: '#ff8a5a',
+    stars: false,
+     obstacleTypes: ['lavapool','magmaboulder','spike'], // spike — раскалённый шип
+    speedMul: 1.30,
+    spawnMin: 0.95, spawnMax: 1.5,
+    coinRate: 1.3,
+    doubleSpawnChance: 0.28,
+    desc: 'Лава, магма и пепел. Одна ошибка — и всё.'
+  },
+  {
+    id: 4, name: 'Храм Некромантов', icon: '💀',
+    goal: 1300,
+    sky: ['#0a0a1a','#1a0a2a','#2a0a3a'],
+    ground: ['#1a0a2a','#0a0515','#000000'],
+    accent: 'rgba(168,85,247,.95)',
+    moon: '#c8b8ff',
+    stars: true,
+   obstacleTypes: ['bonealtar','skulltower','pillar'], // pillar — костяная колонна
+    speedMul: 1.42,
+    spawnMin: 0.8, spawnMax: 1.3,
+    coinRate: 1.2,
+    doubleSpawnChance: 0.38,
+    desc: 'Костяные колонны, алтари и тёмная магия. Не задерживайся.'
+  },
+  {
+    id: 5, name: 'Чародейский Лес', icon: '🌲',
+    goal: 1600,
+    sky: ['#051a0a','#0a3a15','#1a6a25'],
+    ground: ['#1a3a15','#0a1a0a','#000000'],
+    accent: 'rgba(52,211,153,.95)',
+    moon: '#d8ffe0',
+    stars: false,
+        obstacleTypes: ['mushroom','thornvine','rock'], // rock — мшистый камень
+    speedMul: 1.55,
+    spawnMin: 0.7, spawnMax: 1.1,
+    coinRate: 1.1,
+    doubleSpawnChance: 0.48,
+    desc: 'Живой лес с грибами и шипами. Смотри под ноги!'
+  },
+  {
+    id: 6, name: 'Мир Магии', icon: '🌌',
+    goal: 2000,
+    sky: ['#1a0a3a','#3a1a6a','#6a3aa0'],
+    ground: ['#2a1a5a','#1a0a3a','#0a051a'],
+    accent: 'rgba(244,114,182,.95)',
+    moon: '#ffe0ff',
+    stars: true,
+        obstacleTypes: ['portal','prism','crystal'], // всё магическое
+    speedMul: 1.70,
+    spawnMin: 0.6, spawnMax: 0.95,
+    coinRate: 1.0,
+    doubleSpawnChance: 0.60,
+    desc: 'Финал. Порталы, призмы и всё сразу на максималке.'
+  }
+];
+
 /* ================= СОСТОЯНИЕ ================= */
 const G = {
-  running:false, over:false,
+  running:false, over:false, paused:false,
   t:0, dt:0, speed:130, baseSpeed:130,
   score:0, coins:0, distance:0,
-  obstacles:[], coinList:[], particles:[], stars:[],
+  obstacles:[], coinList:[], particles:[], stars:[], decor:[],
   spawnTimer:1.4, coinTimer:1.0,
   ghostTime:0,
-healBeamTime:0   ,
+  healBeamTime:0,
   magnetTime:0,
   levitateTime:0,
   levitateHeight:0,
@@ -218,12 +320,15 @@ healBeamTime:0   ,
   history:[],
   rewindActive:false,
   tornadoes:[],
-  // Здоровье и конфуз
   health:5,
   maxHealth:5,
   confuseTime:0,
-  invulnTime:0,   // короткая неуязвимость после удара
-  damageFlash:0
+  invulnTime:0,
+  damageFlash:0,
+  landingGrace:0,
+  levelIndex:0,
+  levelStartDistance:0,
+  levelTransition:false
 };
 G.groundY = () => H * 0.78;
 
@@ -238,10 +343,14 @@ const mage = {
   castType: '',
   lean: 0,
   levFloat: 0,
-  confuseWobble: 0  // покачивание головой при конфузе
+  confuseWobble: 0
 };
 
 const POSE = { hipY: -34, headY: -66, shoulderY: -58 };
+
+function currentLevel(){
+  return LEVELS[Math.min(G.levelIndex, LEVELS.length-1)];
+}
 
 function updateMage(dt){
   mage.runPhase += dt * (G.running ? 8 : 2);
@@ -256,7 +365,6 @@ function updateMage(dt){
     if (mage.castPose < 0) mage.castPose = 0;
   }
 
-  // ЛЕВИТАЦИЯ
   if (G.levitateTime > 0){
     const target = G.levitateTarget + Math.sin(mage.levFloat) * 12;
     const diff = target - mage.y;
@@ -284,6 +392,7 @@ function startCast(type){
   else if (type === 'tempus') flashCol = '#38bdf8';
   else if (type === 'tornado') flashCol = '#a3e635';
   else if (type === 'levitate') flashCol = '#fde68a';
+  else if (type === 'heal') flashCol = '#f9a8d4';
   G.flashColor = flashCol;
 
   const hx = mage.x + 26;
@@ -291,7 +400,7 @@ function startCast(type){
   let col = '#ffd76a';
   if (type==='ghost') col = '#93e6ff';
   else if (type==='magnet') col = '#d8b4fe';
-  else if (type === 'heal') flashCol = '#f9a8d4';
+  else if (type==='heal') col = '#f9a8d4';
   else if (type==='tempus') col = '#7dd3fc';
   else if (type==='tornado') col = '#bef264';
   else if (type==='levitate') col = '#fef3c7';
@@ -314,14 +423,16 @@ function showSpellName(name, color){
   spellPopup.style.color = color;
   spellPopup.style.textShadow = `0 0 20px ${color}, 0 4px 12px #000`;
   spellPopup.classList.add('show');
+  G.flashColor = color;
+  G.flashAlpha = Math.max(G.flashAlpha, 0.35);
   clearTimeout(popupTimer);
   popupTimer = setTimeout(()=>{ spellPopup.classList.remove('show'); }, 1200);
 }
 
 function jump(){
-   if (!G.running || G.over) return;
+  if (!G.running || G.over || G.levelTransition) return;
   if (G.levitateTime > 0) return;
-  if (G.confuseTime > 0) return; // во время конфуза прыгать нельзя
+  if (G.confuseTime > 0) return;
   if (mage.onGround){
     mage.vy = -1200;
     mage.onGround = false;
@@ -342,11 +453,10 @@ function applyConfusion(){
   if (G.invulnTime > 0) return;
   G.health--;
   G.confuseTime = 2;
-  G.invulnTime = 2.5; // неуязвимость чуть больше конфуза
+  G.invulnTime = 2.5;
   G.damageFlash = 1;
   G.shake = 1.0;
 
-  // Звёздочки вокруг головы
   for (let i=0;i<24;i++){
     const ang = (i / 24) * Math.PI * 2;
     G.particles.push({
@@ -360,20 +470,15 @@ function applyConfusion(){
     });
   }
 
-  // Красный флеш
   const cf = document.getElementById('confuse-flash');
   cf.classList.remove('active');
   void cf.offsetWidth;
   cf.classList.add('active');
   setTimeout(()=>cf.classList.remove('active'), 500);
 
-  // Вибрация
   if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
-
-  // Обновляем HUD здоровья
   updateHealthUI();
 
-  // Если сердца закончились — конец игры
   if (G.health <= 0){
     setTimeout(()=>{ if (G.health <= 0) gameOver(); }, 800);
   }
@@ -390,6 +495,7 @@ function updateHealthUI(){
   }
   text.textContent = hearts;
 }
+
 /* ================= РИСОВАНИЕ МАГА ================= */
 function drawMage(){
   const gy = G.groundY() + mage.y;
@@ -403,12 +509,10 @@ function drawMage(){
   ctx.save();
   ctx.translate(x, gy);
 
-  // Наклон ВПЕРЁД (вправо) при беге + покачивание при конфузе
   const runLean = G.running && mage.onGround && !levitate && !confused ? 0.14 : 0;
   const confuseTilt = confused ? Math.sin(mage.confuseWobble)*0.25 : 0;
   ctx.rotate(runLean + mage.lean*0.25 + confuseTilt);
 
-  // Мигание при неуязвимости
   if (G.invulnTime > 0 && G.confuseTime <= 0){
     ctx.globalAlpha = 0.5 + Math.sin(G.t*25)*0.5;
   }
@@ -427,7 +531,6 @@ function drawMage(){
   const armRaise = cast * 40;
   const levSway = levitate ? Math.sin(mage.levFloat*0.8)*3 : 0;
 
-  /* ---------- АУРЫ ---------- */
   if (ghost){
     const pulse = 1 + Math.sin(G.t*8)*0.08;
     ctx.save();
@@ -474,7 +577,6 @@ function drawMage(){
     ctx.restore();
   }
 
-  /* ---------- ТЕНЬ ---------- */
   if (!ghost && !levitate){
     ctx.save();
     ctx.globalAlpha = 0.28;
@@ -501,19 +603,15 @@ function drawMage(){
   const robeLight= ghost ? '#8ec7e8' : '#7c5fd6';
   const hatDark  = ghost ? '#2c5570' : '#2a1d4f';
 
-  /* ---------- НОГИ (асимметричные, ведущая — правая) ---------- */
   const confuseLegSway = confused ? Math.sin(mage.confuseWobble*1.5)*8 : 0;
 
-  // Асимметрия: правая нога (ведущая) выносится сильнее, левая — толчковая
-  const legSwingR = mage.onGround ? swing*20  : -12;   // ведущая
-  const legSwingL = mage.onGround ? swing2*12 :  8;    // толчковая
+  const legSwingR = mage.onGround ? swing*20  : -12;
+  const legSwingL = mage.onGround ? swing2*12 :  8;
   const levLegSway  = levitate ? Math.sin(mage.levFloat*1.2)*6 : 0;
   const levLegSway2 = levitate ? Math.sin(mage.levFloat*1.2 + Math.PI)*6 : 0;
 
-  // Левая (задняя) нога
   const legEndL  = levitate ? hipY+24 + levLegSway  : hipY+34;
   const legEndLx = levitate ? -8 + levLegSway*0.5  : -6 + legSwingL + confuseLegSway;
-  // Правая (передняя) нога — уходит дальше вправо
   const legEndR  = levitate ? hipY+24 + levLegSway2 : hipY+34;
   const legEndRx = levitate ? 8 + levLegSway2*0.5  : 6 + legSwingR - confuseLegSway;
 
@@ -545,7 +643,6 @@ function drawMage(){
   ctx.beginPath();
   ctx.ellipse(legEndRx, legEndR+1, 8, 4, 0, 0, Math.PI*2); ctx.fill();
 
-  /* ---------- ТЕЛО ---------- */
   ctx.save();
   ctx.translate(0, hipY);
   const sway = mage.robeSway + (levitate ? Math.sin(G.t*4)*0.12 : 0) + (confused ? Math.sin(mage.confuseWobble)*0.15 : 0);
@@ -586,15 +683,10 @@ function drawMage(){
   ctx.fillRect(-4, -13, 8, 6);
   ctx.restore();
 
-  /* ---------- РУКИ (асимметричные) ---------- */
   const armY = shoulderY + 4;
-  // Ведущая рука (правая) машет сильнее и выносится вперёд
   const laSwing = mage.onGround ? swing2*14 : (levitate ? -50 : -22);
   const raSwing = mage.onGround ? swing*26  : (levitate ?  50 :  30);
 
-  const confuseHandOffset = confused ? -30 : 0;
-
-  // Левая рука
   ctx.strokeStyle = robeMid; ctx.lineWidth = 7;
   ctx.beginPath();
   ctx.moveTo(-10, armY);
@@ -614,7 +706,6 @@ function drawMage(){
   ctx.fillStyle = skin;
   ctx.beginPath(); ctx.arc(lHandX, lHandY, 4.5, 0, Math.PI*2); ctx.fill();
 
-  // Правая рука (ведущая) — сильнее выносится вперёд
   ctx.strokeStyle = robeLight; ctx.lineWidth = 7;
   ctx.beginPath();
   ctx.moveTo(10, armY);
@@ -634,7 +725,6 @@ function drawMage(){
   ctx.fillStyle = skin;
   ctx.beginPath(); ctx.arc(handX, handY, 4.5, 0, Math.PI*2); ctx.fill();
 
-  // Свечение от заклинания в руке
   if (cast > 0){
     const glow = cast;
     let col = '251,191,36';
@@ -643,6 +733,7 @@ function drawMage(){
     else if (mage.castType === 'tempus') col = '56,189,248';
     else if (mage.castType === 'tornado') col = '190,242,100';
     else if (mage.castType === 'levitate') col = '253,230,138';
+    else if (mage.castType === 'heal') col = '249,168,212';
 
     const grd = ctx.createRadialGradient(handX, handY, 1, handX, handY, 30*glow);
     grd.addColorStop(0,`rgba(${col},1)`);
@@ -653,19 +744,14 @@ function drawMage(){
     ctx.beginPath(); ctx.arc(handX, handY, 4*glow, 0, Math.PI*2); ctx.fill();
   }
 
-  /* ---------- ШЕЯ ---------- */
   ctx.strokeStyle = skin; ctx.lineWidth = 6;
-  // Шея чуть наклонена вперёд (вправо)
   ctx.beginPath(); ctx.moveTo(1, shoulderY+2); ctx.lineTo(2, headY+10); ctx.stroke();
 
-  /* ---------- ГОЛОВА В ПРОФИЛЬ ---------- */
-  // Голова сдвинута вперёд (вправо) относительно тела
   const headX = 3;
   ctx.fillStyle = skin;
   ctx.beginPath();
   ctx.ellipse(headX, headY, 10, 11, 0, 0, Math.PI*2); ctx.fill();
 
-  // Нос (треугольник справа) — задаёт направление взгляда
   ctx.fillStyle = skin;
   ctx.beginPath();
   ctx.moveTo(headX + 8, headY - 1);
@@ -674,7 +760,6 @@ function drawMage(){
   ctx.closePath();
   ctx.fill();
 
-  // Борода/подбородок — смещены вперёд
   ctx.fillStyle = ghost ? '#cfe9f7' : '#e8e8f0';
   ctx.beginPath();
   ctx.moveTo(headX - 4, headY+5);
@@ -682,10 +767,8 @@ function drawMage(){
   ctx.quadraticCurveTo(headX + 4, headY+14, headX - 4, headY+5);
   ctx.closePath(); ctx.fill();
 
-  /* ---------- ГЛАЗ (один, в профиль) ---------- */
   const blink = (Math.sin(G.t*3.1) > 0.97) ? 0.15 : 1;
   if (confused){
-    // Крестик-глаз при конфузе (смещён вправо)
     ctx.strokeStyle = '#1a1430';
     ctx.lineWidth = 1.8;
     const ex = headX + 3, ey = headY - 2, es = 3;
@@ -694,7 +777,6 @@ function drawMage(){
     ctx.moveTo(ex+es, ey-es); ctx.lineTo(ex-es, ey+es);
     ctx.stroke();
   } else {
-    // Один глаз ближе к носу
     ctx.fillStyle = ghost ? '#e0f6ff' : '#1a1430';
     ctx.beginPath();
     ctx.ellipse(headX + 4, headY - 2, 1.8, 2.4*blink, 0, 0, Math.PI*2);
@@ -705,27 +787,21 @@ function drawMage(){
     }
   }
 
-  /* ---------- ШЛЯПА (смещена назад = влево) ---------- */
-  const hatX = headX - 2; // назад
+  const hatX = headX - 2;
   ctx.fillStyle = hatDark;
-  // Поля
   ctx.beginPath();
   ctx.ellipse(hatX - 1, headY-8, 20, 5, 0, 0, Math.PI*2); ctx.fill();
-  // Конус, наклонён назад
   ctx.beginPath();
   ctx.moveTo(hatX - 12, headY-8);
   ctx.quadraticCurveTo(hatX - 10, headY-30, hatX - 6, headY-42);
   ctx.quadraticCurveTo(hatX + 2, headY-30, hatX + 10, headY-8);
   ctx.closePath(); ctx.fill();
-  // Лента
   ctx.fillStyle = '#c9a227';
   ctx.beginPath();
   ctx.ellipse(hatX - 1, headY-9, 11.5, 3.5, 0, 0, Math.PI*2); ctx.fill();
-  // Звезда
   ctx.fillStyle = ghost ? '#bde9ff' : (levitate ? '#fef3c7' : (magnet ? '#e9d5ff' : (G.rewindActive ? '#7dd3fc' : '#facc15')));
   drawStar(hatX - 2, headY-13, 3, 5);
 
-  // Обводка призрака
   if (ghost){
     ctx.globalAlpha = 0.6 + Math.sin(G.t*10)*0.2;
     ctx.strokeStyle = 'rgba(180,240,255,.9)';
@@ -735,7 +811,6 @@ function drawMage(){
 
   ctx.restore();
 
-  /* ---------- ЗВЁЗДЫ ПРИ КОНФУЗЕ ---------- */
   if (confused){
     const headWorldY = gy + POSE.headY - 20;
     const cx = x;
@@ -760,7 +835,6 @@ function drawMage(){
     ctx.restore();
   }
 
-  /* ---------- КРЫЛЬЯ ПРИ ЛЕВИТАЦИИ ---------- */
   if (levitate){
     const wingY = gy - 55;
     ctx.save();
@@ -911,14 +985,37 @@ function updateTornadoes(dt){
 /* ================= ПРЕПЯТСТВИЯ / МОНЕТЫ ================= */
 function spawnObstacle(){
   const gy = G.groundY();
-  const types = ['rock','spike','crystal','pillar'];
+  const types = currentLevel().obstacleTypes;
   const type = types[Math.floor(Math.random()*types.length)];
   let o;
   const baseX = W + 60;
+
   if (type==='rock') o = {x:baseX, y:gy, w:44, h:38, type, hp:1, wobble:Math.random()*6, passed:false};
   else if (type==='spike') o = {x:baseX, y:gy, w:34, h:52, type, hp:1, passed:false};
   else if (type==='crystal') o = {x:baseX, y:gy, w:38, h:64, type, hp:1, hue:Math.random()*60+260, passed:false};
+  else if (type==='pillar') o = {x:baseX, y:gy, w:30, h:80, type, hp:1, passed:false};
+
+  // Уникальные препятствия
+  else if (type==='cactus') o = {x:baseX, y:gy, w:36, h:58, type, hp:1, phase:Math.random()*6, passed:false};
+  else if (type==='sandtower') o = {x:baseX, y:gy, w:42, h:70, type, hp:1, phase:Math.random()*6, passed:false};
+
+  else if (type==='bookshelf') o = {x:baseX, y:gy, w:46, h:74, type, hp:1, bookHue:Math.random()*360, passed:false};
+  else if (type==='cauldron') o = {x:baseX, y:gy, w:42, h:46, type, hp:1, bubblePhase:Math.random()*6, passed:false};
+
+  else if (type==='lavapool') o = {x:baseX, y:gy, w:56, h:30, type, hp:1, phase:Math.random()*6, passed:false};
+  else if (type==='magmaboulder') o = {x:baseX, y:gy, w:50, h:50, type, hp:1, phase:Math.random()*6, passed:false};
+
+  else if (type==='bonealtar') o = {x:baseX, y:gy, w:44, h:60, type, hp:1, phase:Math.random()*6, passed:false};
+  else if (type==='skulltower') o = {x:baseX, y:gy, w:36, h:78, type, hp:1, phase:Math.random()*6, passed:false};
+
+  else if (type==='mushroom') o = {x:baseX, y:gy, w:44, h:54, type, hp:1, phase:Math.random()*6, passed:false};
+  else if (type==='thornvine') o = {x:baseX, y:gy, w:34, h:66, type, hp:1, phase:Math.random()*6, passed:false};
+
+  else if (type==='portal') o = {x:baseX, y:gy, w:50, h:76, type, hp:1, phase:Math.random()*6, passed:false};
+  else if (type==='prism') o = {x:baseX, y:gy, w:42, h:68, type, hp:1, hue:Math.random()*360, passed:false};
+
   else o = {x:baseX, y:gy, w:30, h:80, type, hp:1, passed:false};
+
   G.obstacles.push(o);
 }
 
@@ -932,8 +1029,9 @@ function spawnCoin(){
   });
 }
 
-/* ================= ФОН / ЗЕМЛЯ ================= */
+/* ================= ФОН ================= */
 function drawBackground(){
+  const lvl = currentLevel();
   const sky = ctx.createLinearGradient(0,0,0,H);
   if (G.rewindActive){
     sky.addColorStop(0,'#0a2540'); sky.addColorStop(0.55,'#0e3a5c'); sky.addColorStop(1,'#0a1a2e');
@@ -948,7 +1046,9 @@ function drawBackground(){
   } else if (G.tornadoes.length > 0){
     sky.addColorStop(0,'#1a2a10'); sky.addColorStop(0.55,'#2a3a15'); sky.addColorStop(1,'#0b0a1a');
   } else {
-    sky.addColorStop(0,'#1a0f3a'); sky.addColorStop(0.55,'#2a1a55'); sky.addColorStop(1,'#0b0a1a');
+    sky.addColorStop(0, lvl.sky[0]);
+    sky.addColorStop(0.55, lvl.sky[1]);
+    sky.addColorStop(1, lvl.sky[2]);
   }
   ctx.fillStyle = sky;
   ctx.fillRect(0,0,W,H);
@@ -962,21 +1062,34 @@ function drawBackground(){
   mg.addColorStop(1,'rgba(255,230,170,0)');
   ctx.fillStyle = mg;
   ctx.beginPath(); ctx.arc(mx,my,mr*2.4,0,Math.PI*2); ctx.fill();
-  ctx.fillStyle = '#fdf3d0';
+  ctx.fillStyle = lvl.moon || '#fdf3d0';
   ctx.beginPath(); ctx.arc(mx,my,mr,0,Math.PI*2); ctx.fill();
   ctx.fillStyle = 'rgba(200,190,150,.35)';
   ctx.beginPath(); ctx.arc(mx-8,my-6,6,0,Math.PI*2); ctx.fill();
   ctx.beginPath(); ctx.arc(mx+9,my+7,4,0,Math.PI*2); ctx.fill();
   ctx.restore();
 
-  for (const s of G.stars){
-    ctx.globalAlpha = s.a * (0.6 + Math.sin(G.t*s.tw + s.ph)*0.4);
-    ctx.fillStyle = '#fff';
-    ctx.fillRect(s.x, s.y, s.s, s.s);
+  if (lvl.stars){
+    for (const s of G.stars){
+      ctx.globalAlpha = s.a * (0.6 + Math.sin(G.t*s.tw + s.ph)*0.4);
+      ctx.fillStyle = '#fff';
+      ctx.fillRect(s.x, s.y, s.s, s.s);
+    }
   }
   ctx.globalAlpha = 1;
 
   const gy = G.groundY();
+  const lvlIndex = G.levelIndex;
+
+  // УНИКАЛЬНЫЙ ФОН ПО УРОВНЯМ
+  if (lvlIndex === 1) drawDesertBackdrop();
+  else if (lvlIndex === 2) drawAcademyBackdrop();
+  else if (lvlIndex === 3) drawVolcanoBackdrop();
+  else if (lvlIndex === 4) drawNecropolisBackdrop();
+  else if (lvlIndex === 5) drawForestBackdrop();
+  else if (lvlIndex === 6) drawCosmicBackdrop();
+
+  // Дальние холмы (общие, но с цветом уровня)
   ctx.fillStyle = 'rgba(30,20,60,.85)';
   ctx.beginPath();
   ctx.moveTo(0, gy);
@@ -1013,14 +1126,449 @@ function drawBackground(){
   }
 }
 
+/* ================= УНИКАЛЬНЫЕ ФОНЫ ================= */
+function drawDesertBackdrop(){
+  const gy = G.groundY();
+  const t = G.t;
+
+  // Пирамиды
+  ctx.save();
+  ctx.globalAlpha = 0.45;
+  for (let i = 0; i < 4; i++){
+    const px = W*0.1 + i*W*0.24;
+    const pw = 120 + i*20;
+    const ph = 90 + i*15;
+    const bob = Math.sin(t*0.5 + i)*3;
+    ctx.fillStyle = i % 2 ? '#8a5a2a' : '#a06a30';
+    ctx.beginPath();
+    ctx.moveTo(px - pw/2, gy - 20);
+    ctx.lineTo(px, gy - 20 - ph + bob);
+    ctx.lineTo(px + pw/2, gy - 20);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = 'rgba(255,220,150,.15)';
+    ctx.beginPath();
+    ctx.moveTo(px, gy - 20 - ph + bob);
+    ctx.lineTo(px + pw/2, gy - 20);
+    ctx.lineTo(px, gy - 20);
+    ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+
+  // Кактусы на заднем плане
+  ctx.save();
+  ctx.globalAlpha = 0.55;
+  const cactiOff = (G.distance * 0.15) % 400;
+  for (let i = -1; i < 5; i++){
+    const cx = i*400 - cactiOff + 60;
+    const ch = 40 + (i%3)*15;
+    ctx.fillStyle = '#2d5a2d';
+    ctx.fillRect(cx - 5, gy - ch, 10, ch);
+    ctx.fillRect(cx - 18, gy - ch + 10, 8, 18);
+    ctx.fillRect(cx + 10, gy - ch + 18, 8, 14);
+    ctx.fillStyle = '#1f3d1f';
+    ctx.fillRect(cx - 5, gy - ch, 4, ch);
+  }
+  ctx.restore();
+
+  // Песчаные дюны
+  ctx.save();
+  ctx.globalAlpha = 0.5;
+  ctx.fillStyle = '#c98a3a';
+  ctx.beginPath();
+  ctx.moveTo(0, gy);
+  for (let x = 0; x <= W; x += 50){
+    const y = gy - 60 - Math.sin(x*0.01 + 2)*20 - Math.sin(x*0.025)*10;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(W, gy); ctx.closePath(); ctx.fill();
+  ctx.restore();
+}
+
+function drawAcademyBackdrop(){
+  const gy = G.groundY();
+  const t = G.t;
+
+  // Большой замок
+  ctx.save();
+  ctx.globalAlpha = 0.5;
+  const cx = W*0.72;
+  const baseY = gy - 20;
+
+  // Главная башня
+  ctx.fillStyle = '#2a3a5a';
+  ctx.fillRect(cx - 30, baseY - 200, 60, 200);
+  ctx.beginPath();
+  ctx.moveTo(cx - 38, baseY - 200);
+  ctx.lineTo(cx, baseY - 260);
+  ctx.lineTo(cx + 38, baseY - 200);
+  ctx.closePath(); ctx.fill();
+
+  // Боковые башни
+  ctx.fillRect(cx - 80, baseY - 150, 36, 150);
+  ctx.fillRect(cx + 44, baseY - 170, 36, 170);
+  ctx.beginPath();
+  ctx.moveTo(cx - 84, baseY - 150);
+  ctx.lineTo(cx - 62, baseY - 200);
+  ctx.lineTo(cx - 40, baseY - 150);
+  ctx.closePath(); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(cx + 40, baseY - 170);
+  ctx.lineTo(cx + 62, baseY - 220);
+  ctx.lineTo(cx + 84, baseY - 170);
+  ctx.closePath(); ctx.fill();
+
+  // Окна светятся
+  const windows = [
+    [cx - 15, baseY - 170], [cx + 8, baseY - 140],
+    [cx - 15, baseY - 100], [cx + 8, baseY - 70],
+    [cx - 70, baseY - 110], [cx + 54, baseY - 130]
+  ];
+  for (let i = 0; i < windows.length; i++){
+    const [wx, wy] = windows[i];
+    const fl = 0.5 + Math.sin(t*2 + i)*0.3;
+    ctx.fillStyle = `rgba(255,220,120,${fl})`;
+    ctx.fillRect(wx, wy, 8, 12);
+  }
+  ctx.restore();
+
+  // Садовые деревья
+  ctx.save();
+  ctx.globalAlpha = 0.4;
+  const treeOff = (G.distance * 0.2) % 350;
+  for (let i = -1; i < 5; i++){
+    const tx = i*350 - treeOff + 100;
+    const th = 50 + (i%3)*12;
+    ctx.fillStyle = '#2a1a3a';
+    ctx.fillRect(tx - 4, gy - th, 8, th);
+    ctx.fillStyle = '#1f3a2a';
+    ctx.beginPath(); ctx.arc(tx, gy - th - 8, 20, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(tx - 14, gy - th, 14, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(tx + 14, gy - th, 14, 0, Math.PI*2); ctx.fill();
+    // Магические светлячки
+    const fl = 0.4 + Math.sin(t*3 + i)*0.3;
+    ctx.fillStyle = `rgba(180,230,255,${fl})`;
+    ctx.beginPath(); ctx.arc(tx + Math.sin(t + i)*8, gy - th - 20, 2, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawVolcanoBackdrop(){
+  const gy = G.groundY();
+  const t = G.t;
+
+  // Вулкан
+  ctx.save();
+  ctx.globalAlpha = 0.6;
+  const vx = W*0.25;
+  const vh = 240;
+  ctx.fillStyle = '#3a0a05';
+  ctx.beginPath();
+  ctx.moveTo(vx - 160, gy - 20);
+  ctx.lineTo(vx - 40, gy - vh);
+  ctx.lineTo(vx - 20, gy - vh + 10);
+  ctx.lineTo(vx + 20, gy - vh + 10);
+  ctx.lineTo(vx + 40, gy - vh);
+  ctx.lineTo(vx + 160, gy - 20);
+  ctx.closePath(); ctx.fill();
+
+  // Кратер светится
+  ctx.fillStyle = `rgba(255,120,40,${0.6 + Math.sin(t*3)*0.3})`;
+  ctx.beginPath();
+  ctx.ellipse(vx, gy - vh + 8, 24, 6, 0, 0, Math.PI*2);
+  ctx.fill();
+
+  // Лава стекает
+  ctx.fillStyle = 'rgba(255,80,20,.7)';
+  for (let i = 0; i < 3; i++){
+    const lx = vx - 20 + i*20;
+    const flow = (t*40 + i*30) % vh;
+    ctx.beginPath();
+    ctx.moveTo(lx - 3, gy - vh + 12);
+    ctx.lineTo(lx + 3, gy - vh + 12);
+    ctx.lineTo(lx + 2, gy - vh + 12 + flow);
+    ctx.lineTo(lx - 2, gy - vh + 12 + flow);
+    ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+
+  // Лавовые озёра на заднем плане
+  ctx.save();
+  ctx.globalAlpha = 0.45;
+  const lavaOff = (G.distance * 0.25) % 500;
+  for (let i = -1; i < 4; i++){
+    const lx = i*500 - lavaOff + 200;
+    ctx.fillStyle = `rgba(255,100,20,${0.5 + Math.sin(t*2 + i)*0.2})`;
+    ctx.beginPath();
+    ctx.ellipse(lx, gy - 15, 60, 10, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = `rgba(255,200,80,${0.4 + Math.sin(t*3 + i)*0.2})`;
+    ctx.beginPath();
+    ctx.ellipse(lx, gy - 17, 30, 5, 0, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // Пепел падает
+  ctx.save();
+  ctx.globalAlpha = 0.5;
+  for (let i = 0; i < 30; i++){
+    const ax = (i * 137 + t * (10 + i%5)) % (W + 100) - 50;
+    const ay = (t * (20 + i%7) + i*50) % (H*0.7);
+    ctx.fillStyle = i % 3 === 0 ? '#ff6a2a' : '#5a3a2a';
+    ctx.fillRect(ax, ay, 2, 2);
+  }
+  ctx.restore();
+}
+
+function drawNecropolisBackdrop(){
+  const gy = G.groundY();
+  const t = G.t;
+
+  // Тёмный храм
+  ctx.save();
+  ctx.globalAlpha = 0.55;
+  const tx = W*0.7;
+  const th = 220;
+  // Основное здание
+  ctx.fillStyle = '#1a0a2a';
+  ctx.fillRect(tx - 70, gy - th, 140, th);
+  // Колонны
+  for (let i = 0; i < 5; i++){
+    const cxx = tx - 70 + i*35;
+    ctx.fillStyle = '#2a1040';
+    ctx.fillRect(cxx, gy - th, 12, th);
+    ctx.fillStyle = '#3a1a55';
+    ctx.fillRect(cxx - 2, gy - th, 16, 6);
+  }
+  // Крыша-треугольник
+  ctx.fillStyle = '#120520';
+  ctx.beginPath();
+  ctx.moveTo(tx - 80, gy - th);
+  ctx.lineTo(tx, gy - th - 60);
+  ctx.lineTo(tx + 80, gy - th);
+  ctx.closePath(); ctx.fill();
+
+  // Черепа на фронтоне
+  for (let i = 0; i < 3; i++){
+    const sx = tx - 30 + i*30;
+    const sy = gy - th - 15 + Math.sin(t*2 + i)*3;
+    ctx.fillStyle = '#c8b8ff';
+    ctx.beginPath(); ctx.arc(sx, sy, 8, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#1a0a2a';
+    ctx.beginPath(); ctx.arc(sx - 3, sy - 2, 2, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(sx + 3, sy - 2, 2, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+
+  // Костяные деревья
+  ctx.save();
+  ctx.globalAlpha = 0.45;
+  const treeOff = (G.distance * 0.15) % 450;
+  for (let i = -1; i < 4; i++){
+    const bx = i*450 - treeOff + 120;
+    const bh = 60 + (i%3)*20;
+    ctx.strokeStyle = '#5a4a6a';
+    ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(bx, gy);
+    ctx.lineTo(bx, gy - bh);
+    ctx.stroke();
+    // Ветви
+    ctx.lineWidth = 3;
+    for (let b = 0; b < 4; b++){
+      const by = gy - bh + b*12;
+      ctx.beginPath();
+      ctx.moveTo(bx, by);
+      ctx.lineTo(bx - 15 - b*3, by - 10);
+      ctx.moveTo(bx, by);
+      ctx.lineTo(bx + 15 + b*3, by - 8);
+      ctx.stroke();
+    }
+    // Призрачный свет
+    const gl = 0.3 + Math.sin(t*2 + i)*0.2;
+    ctx.fillStyle = `rgba(168,85,247,${gl})`;
+    ctx.beginPath();
+    ctx.arc(bx, gy - bh - 5, 6, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.restore();
+
+  // Туман у земли
+  ctx.save();
+  ctx.globalAlpha = 0.3;
+  for (let i = 0; i < 4; i++){
+    const fx = (i*W/3 + t*20) % (W + 200) - 100;
+    ctx.fillStyle = 'rgba(100,60,140,.4)';
+    ctx.beginPath();
+    ctx.ellipse(fx, gy - 10, 120, 15, 0, 0, Math.PI*2);
+    ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawForestBackdrop(){
+  const gy = G.groundY();
+  const t = G.t;
+
+  // Дальние деревья
+  ctx.save();
+  ctx.globalAlpha = 0.5;
+  const treeOff = (G.distance * 0.12) % 300;
+  for (let i = -1; i < 7; i++){
+    const tx = i*300 - treeOff + 50;
+    const th = 100 + (i%4)*25;
+    // Ствол
+    ctx.fillStyle = '#0a2a15';
+    ctx.fillRect(tx - 6, gy - th, 12, th);
+    // Крона
+    ctx.fillStyle = '#0f3a1a';
+    ctx.beginPath();
+    ctx.arc(tx, gy - th - 10, 35, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath();
+    ctx.arc(tx - 25, gy - th + 5, 25, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath();
+    ctx.arc(tx + 25, gy - th + 5, 25, 0, Math.PI*2); ctx.fill();
+    // Светящиеся глаза
+    if (i % 3 === 0){
+      const gl = 0.5 + Math.sin(t*4 + i)*0.4;
+      ctx.fillStyle = `rgba(180,255,100,${gl})`;
+      ctx.beginPath(); ctx.arc(tx - 8, gy - th - 5, 2, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(tx + 8, gy - th - 5, 2, 0, Math.PI*2); ctx.fill();
+    }
+  }
+  ctx.restore();
+
+  // Гигантские грибы
+  ctx.save();
+  ctx.globalAlpha = 0.4;
+  const mushOff = (G.distance * 0.3) % 600;
+  for (let i = -1; i < 3; i++){
+    const mx = i*600 - mushOff + 250;
+    const mh = 40 + (i%2)*20;
+    // Ножка
+    ctx.fillStyle = '#d8d0c0';
+    ctx.fillRect(mx - 5, gy - mh, 10, mh);
+    // Шляпка
+    ctx.fillStyle = '#a02020';
+    ctx.beginPath();
+    ctx.ellipse(mx, gy - mh, 25, 12, 0, Math.PI, 0);
+    ctx.fill();
+    // Точки
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(mx - 10, gy - mh - 4, 3, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(mx + 8, gy - mh - 6, 4, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+
+  // Светлячки
+  ctx.save();
+  for (let i = 0; i < 20; i++){
+    const fx = (i * 89 + t * 30) % W;
+    const fy = gy - 40 - (i * 47 % 120) + Math.sin(t*2 + i)*10;
+    const gl = 0.4 + Math.sin(t*5 + i)*0.4;
+    ctx.globalAlpha = gl;
+    ctx.fillStyle = '#c8ff80';
+    ctx.beginPath(); ctx.arc(fx, fy, 2, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawCosmicBackdrop(){
+  const gy = G.groundY();
+  const t = G.t;
+
+  // Планеты
+  ctx.save();
+  ctx.globalAlpha = 0.5;
+  const planets = [
+    {x: W*0.15, y: H*0.2, r: 30, c: '#c084fc'},
+    {x: W*0.85, y: H*0.15, r: 20, c: '#f472b6'},
+    {x: W*0.5, y: H*0.1, r: 15, c: '#38bdf8'}
+  ];
+  for (let i = 0; i < planets.length; i++){
+    const p = planets[i];
+    const bob = Math.sin(t*0.5 + i)*5;
+    const grd = ctx.createRadialGradient(p.x - 5, p.y - 5 + bob, 2, p.x, p.y + bob, p.r);
+    grd.addColorStop(0, p.c);
+    grd.addColorStop(1, 'rgba(0,0,0,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(p.x, p.y + bob, p.r, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+
+  // Порталы
+  ctx.save();
+  ctx.globalAlpha = 0.4;
+  const portalOff = (G.distance * 0.2) % 700;
+  for (let i = -1; i < 3; i++){
+    const px = i*700 - portalOff + 300;
+    const py = gy - 120;
+    const pulse = 1 + Math.sin(t*3 + i)*0.1;
+    ctx.strokeStyle = '#f472b6';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.ellipse(px, py, 30*pulse, 50*pulse, 0, 0, Math.PI*2);
+    ctx.stroke();
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(px, py, 22*pulse, 38*pulse, 0, 0, Math.PI*2);
+    ctx.stroke();
+    // Внутреннее свечение
+    const pg = ctx.createRadialGradient(px, py, 2, px, py, 30*pulse);
+    pg.addColorStop(0, 'rgba(244,114,182,.6)');
+    pg.addColorStop(1, 'rgba(244,114,182,0)');
+    ctx.fillStyle = pg;
+    ctx.beginPath(); ctx.ellipse(px, py, 30*pulse, 50*pulse, 0, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+
+  // Кристаллы на заднем плане
+  ctx.save();
+  ctx.globalAlpha = 0.35;
+  const crystOff = (G.distance * 0.25) % 400;
+  for (let i = -1; i < 4; i++){
+    const cx = i*400 - crystOff + 100;
+    const ch = 50 + (i%3)*20;
+    ctx.fillStyle = '#6a3aa0';
+    ctx.beginPath();
+    ctx.moveTo(cx - 10, gy);
+    ctx.lineTo(cx, gy - ch);
+    ctx.lineTo(cx + 10, gy);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#a855f7';
+    ctx.beginPath();
+    ctx.moveTo(cx, gy - ch);
+    ctx.lineTo(cx + 10, gy);
+    ctx.lineTo(cx, gy);
+    ctx.closePath(); ctx.fill();
+  }
+  ctx.restore();
+
+  // Звёздная пыль
+  ctx.save();
+  for (let i = 0; i < 40; i++){
+    const sx = (i * 173 + t * 20) % W;
+    const sy = (i * 97 + t * 5) % (H * 0.6);
+    const gl = 0.3 + Math.sin(t*4 + i)*0.3;
+    ctx.globalAlpha = gl;
+    ctx.fillStyle = i % 3 === 0 ? '#f472b6' : '#c084fc';
+    ctx.fillRect(sx, sy, 2, 2);
+  }
+  ctx.restore();
+}
+
 function drawGround(){
   const gy = G.groundY();
+  const lvl = currentLevel();
   const gr = ctx.createLinearGradient(0,gy,0,H);
-  gr.addColorStop(0,'#2a1d4f'); gr.addColorStop(0.3,'#1a1235'); gr.addColorStop(1,'#0b0a1a');
+  gr.addColorStop(0, lvl.ground[0]);
+  gr.addColorStop(0.3, lvl.ground[1]);
+  gr.addColorStop(1, lvl.ground[2]);
   ctx.fillStyle = gr;
   ctx.fillRect(0,gy,W,H-gy);
 
-  let edgeCol = 'rgba(124,95,214,.9)';
+  let edgeCol = lvl.accent;
   if (G.rewindActive) edgeCol = 'rgba(56,189,248,.9)';
   else if (G.confuseTime > 0) edgeCol = 'rgba(239,68,68,.9)';
   else if (G.levitateTime>0) edgeCol = 'rgba(253,230,138,.9)';
@@ -1040,6 +1588,7 @@ function drawGround(){
   }
 }
 
+/* ================= ПРЕПЯТСТВИЯ (РИСОВАНИЕ) ================= */
 function drawObstacle(o){
   ctx.save();
   ctx.translate(o.x, o.y);
@@ -1047,9 +1596,11 @@ function drawObstacle(o){
   ctx.beginPath(); ctx.ellipse(0, 2, o.w*0.55, 5, 0,0,Math.PI*2); ctx.fill();
   ctx.globalAlpha = 1;
 
+  const lvlIndex = G.levelIndex;
+
   if (o.type==='rock'){
     const wob = Math.sin(G.t*3+o.wobble)*1.2;
-    ctx.fillStyle = '#4a3d6b';
+    ctx.fillStyle = lvlIndex===3 ? '#4a1a0a' : (lvlIndex===1 ? '#8a6a3a' : (lvlIndex===5 ? '#2a4a2a' : '#4a3d6b'));
     ctx.beginPath();
     ctx.moveTo(-o.w/2, 0);
     ctx.lineTo(-o.w/2+4, -o.h*0.7+wob);
@@ -1058,26 +1609,24 @@ function drawObstacle(o){
     ctx.lineTo(o.w/2-2, -o.h*0.4);
     ctx.lineTo(o.w/2, 0);
     ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#5f4f88';
+    ctx.fillStyle = lvlIndex===3 ? '#6a2a10' : (lvlIndex===1 ? '#a0824a' : (lvlIndex===5 ? '#3a5a3a' : '#5f4f88'));
     ctx.beginPath();
     ctx.moveTo(-o.w/2+4, -o.h*0.7+wob);
     ctx.lineTo(-6, -o.h+wob*0.5);
     ctx.lineTo(0, -o.h*0.6);
     ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#7c6aa8';
-    ctx.beginPath();
-    ctx.arc(-4, -o.h*0.6, 2.5, 0, Math.PI*2); ctx.fill();
   }
   else if (o.type==='spike'){
-    ctx.fillStyle = '#c0c8d8';
+    const spikeCol = lvlIndex===3 ? '#ff6a2a' : (lvlIndex===1 ? '#e0c080' : (lvlIndex===4 ? '#c8b8ff' : (lvlIndex===6 ? '#f472b6' : '#c0c8d8')));
+    ctx.fillStyle = spikeCol;
     ctx.beginPath();
     ctx.moveTo(-o.w/2, 0); ctx.lineTo(0, -o.h); ctx.lineTo(o.w/2, 0);
     ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#8a94a8';
+    ctx.fillStyle = 'rgba(0,0,0,.3)';
     ctx.beginPath();
     ctx.moveTo(0, -o.h); ctx.lineTo(o.w/2, 0); ctx.lineTo(0, 0);
     ctx.closePath(); ctx.fill();
-    ctx.fillStyle = '#e8eef8';
+    ctx.fillStyle = 'rgba(255,255,255,.4)';
     ctx.beginPath();
     ctx.moveTo(-4, -o.h*0.3); ctx.lineTo(0, -o.h*0.85); ctx.lineTo(2, -o.h*0.3);
     ctx.closePath(); ctx.fill();
@@ -1106,6 +1655,281 @@ function drawObstacle(o){
     ctx.fillStyle = cg;
     ctx.beginPath(); ctx.arc(0,-o.h*0.6,o.h*0.8,0,Math.PI*2); ctx.fill();
     ctx.globalAlpha = 1;
+  }
+  else if (o.type==='pillar'){
+    const pc = lvlIndex===3 ? ['#3a0a05','#5a1a0a','#ff6a2a'] : (lvlIndex===4 ? ['#1a0a2a','#2a1040','#a855f7'] : ['#3a2d5e','#4f3f7a','#7c5fd6']);
+    ctx.fillStyle = pc[0];
+    ctx.fillRect(-o.w/2, -o.h, o.w, o.h);
+    ctx.fillStyle = pc[1];
+    ctx.fillRect(-o.w/2, -o.h, o.w*0.5, o.h);
+    ctx.fillStyle = pc[2];
+    ctx.fillRect(-o.w/2-2, -o.h-3, o.w+4, 6);
+    ctx.beginPath(); ctx.arc(0, -o.h+10, 3+Math.sin(G.t*5)*0.8, 0, Math.PI*2); ctx.fill();
+  }
+  // ===== УНИКАЛЬНЫЕ ПРЕПЯТСТВИЯ =====
+  else if (o.type==='cactus'){
+    const sway = Math.sin(G.t*2 + o.phase)*2;
+    ctx.fillStyle = '#2d6a2d';
+    ctx.fillRect(-6, -o.h, 12, o.h);
+    ctx.fillStyle = '#1f4a1f';
+    ctx.fillRect(-6, -o.h, 5, o.h);
+    // Руки
+    ctx.fillStyle = '#2d6a2d';
+    ctx.fillRect(-18 + sway, -o.h*0.7, 10, 20);
+    ctx.fillRect(8 + sway, -o.h*0.55, 10, 16);
+    // Колючки
+    ctx.strokeStyle = '#e0f0d0'; ctx.lineWidth = 1;
+    for (let i = 0; i < 6; i++){
+      const y = -o.h + 10 + i*8;
+      ctx.beginPath(); ctx.moveTo(-6, y); ctx.lineTo(-10, y-2); ctx.stroke();
+      ctx.beginPath(); ctx.moveTo(6, y); ctx.lineTo(10, y-2); ctx.stroke();
+    }
+    // Цветок
+    ctx.fillStyle = '#ff6a9a';
+    ctx.beginPath(); ctx.arc(0, -o.h-2, 4, 0, Math.PI*2); ctx.fill();
+  }
+  else if (o.type==='sandtower'){
+    ctx.fillStyle = '#c9a060';
+    ctx.beginPath();
+    ctx.moveTo(-o.w/2, 0);
+    ctx.lineTo(-o.w*0.3, -o.h);
+    ctx.lineTo(o.w*0.3, -o.h);
+    ctx.lineTo(o.w/2, 0);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#e0b878';
+    ctx.beginPath();
+    ctx.moveTo(-o.w*0.3, -o.h);
+    ctx.lineTo(o.w*0.3, -o.h);
+    ctx.lineTo(o.w/2, 0);
+    ctx.lineTo(0, 0);
+    ctx.closePath(); ctx.fill();
+    // Иероглифы
+    ctx.fillStyle = '#8a6030';
+    for (let i = 0; i < 3; i++){
+      ctx.fillRect(-4, -o.h + 15 + i*18, 8, 4);
+    }
+    // Песок сыпется
+    ctx.fillStyle = 'rgba(200,160,90,.5)';
+    for (let i = 0; i < 3; i++){
+      const sy = (G.t*40 + i*20) % o.h;
+      ctx.fillRect(-o.w/2 + 5 + i*10, -o.h + sy, 2, 2);
+    }
+  }
+  else if (o.type==='bookshelf'){
+    ctx.fillStyle = '#3a2a1a';
+    ctx.fillRect(-o.w/2, -o.h, o.w, o.h);
+    ctx.fillStyle = '#2a1a0a';
+    ctx.fillRect(-o.w/2, -o.h, o.w, 4);
+    ctx.fillRect(-o.w/2, -o.h/2, o.w, 4);
+    const bookColors = ['#c0392b','#2980b9','#27ae60','#8e44ad','#d35400','#16a085'];
+    for (let row = 0; row < 2; row++){
+      const rowY = -o.h + 8 + row * (o.h/2);
+      for (let b = 0; b < 4; b++){
+        const bw = o.w/4 - 3;
+        const bx = -o.w/2 + 2 + b * (o.w/4);
+        ctx.fillStyle = bookColors[(b + row + Math.floor(o.bookHue)) % bookColors.length];
+        ctx.fillRect(bx, rowY, bw, o.h/2 - 14);
+      }
+    }
+    ctx.fillStyle = `rgba(255,220,100,${0.5 + Math.sin(G.t*4)*0.3})`;
+    ctx.fillRect(-o.w/2 + 4, -o.h + 10, o.w/4 - 3, o.h/2 - 14);
+  }
+  else if (o.type==='cauldron'){
+    ctx.fillStyle = '#2a2a3a';
+    ctx.beginPath();
+    ctx.ellipse(0, -o.h*0.3, o.w/2, o.h*0.45, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = '#1a1a2a';
+    ctx.beginPath();
+    ctx.ellipse(0, -o.h*0.55, o.w/2 - 2, 6, 0, 0, Math.PI*2);
+    ctx.fill();
+    const bubble = Math.sin(G.t*3 + o.bubblePhase);
+    ctx.fillStyle = `rgba(80,220,120,${0.7 + bubble*0.2})`;
+    ctx.beginPath();
+    ctx.ellipse(0, -o.h*0.55, o.w/2 - 6, 4, 0, 0, Math.PI*2);
+    ctx.fill();
+    for (let i = 0; i < 3; i++){
+      const by = -o.h*0.55 - ((G.t*20 + i*15 + o.bubblePhase*10) % 30);
+      const bx = Math.sin(G.t*4 + i*2 + o.bubblePhase) * 8;
+      ctx.fillStyle = `rgba(150,255,180,${0.6 - (G.t*20 + i*15) % 30 / 50})`;
+      ctx.beginPath(); ctx.arc(bx, by, 2 + i*0.5, 0, Math.PI*2); ctx.fill();
+    }
+    ctx.strokeStyle = '#2a2a3a'; ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.moveTo(-o.w/2 + 6, -o.h*0.1); ctx.lineTo(-o.w/2 + 2, 0);
+    ctx.moveTo(o.w/2 - 6, -o.h*0.1); ctx.lineTo(o.w/2 - 2, 0);
+    ctx.stroke();
+  }
+  else if (o.type==='lavapool'){
+    const pulse = Math.sin(G.t*3 + o.phase)*0.1;
+    ctx.fillStyle = `rgba(255,80,20,${0.8 + pulse})`;
+    ctx.beginPath();
+    ctx.ellipse(0, -o.h*0.3, o.w/2, o.h*0.5, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.fillStyle = `rgba(255,200,60,${0.6 + pulse})`;
+    ctx.beginPath();
+    ctx.ellipse(0, -o.h*0.35, o.w/3, o.h*0.3, 0, 0, Math.PI*2);
+    ctx.fill();
+    // Пузыри лавы
+    for (let i = 0; i < 3; i++){
+      const by = -o.h*0.3 - ((G.t*30 + i*20) % 25);
+      const bx = Math.sin(G.t*5 + i*2) * 10;
+      ctx.fillStyle = `rgba(255,220,100,${0.8 - ((G.t*30 + i*20) % 25)/40})`;
+      ctx.beginPath(); ctx.arc(bx, by, 3, 0, Math.PI*2); ctx.fill();
+    }
+  }
+  else if (o.type==='magmaboulder'){
+    const wob = Math.sin(G.t*2 + o.phase)*1.5;
+    const grd = ctx.createRadialGradient(-8, -o.h*0.6, 4, 0, -o.h*0.5, o.h*0.7);
+    grd.addColorStop(0, '#ff8a2a');
+    grd.addColorStop(0.5, '#a02a0a');
+    grd.addColorStop(1, '#3a0a05');
+    ctx.fillStyle = grd;
+    ctx.beginPath();
+    ctx.arc(0 + wob, -o.h*0.5, o.h*0.5, 0, Math.PI*2);
+    ctx.fill();
+    // Трещины
+    ctx.strokeStyle = '#ffcc40'; ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.moveTo(-8, -o.h*0.7); ctx.lineTo(-2, -o.h*0.5); ctx.lineTo(-6, -o.h*0.3);
+    ctx.moveTo(6, -o.h*0.6); ctx.lineTo(2, -o.h*0.4); ctx.lineTo(8, -o.h*0.2);
+    ctx.stroke();
+  }
+  else if (o.type==='bonealtar'){
+    // Алтарь
+    ctx.fillStyle = '#2a1040';
+    ctx.fillRect(-o.w/2, -o.h*0.4, o.w, o.h*0.4);
+    ctx.fillStyle = '#3a1a55';
+    ctx.fillRect(-o.w/2, -o.h*0.4, o.w, 6);
+    // Кости
+    ctx.strokeStyle = '#c8b8ff'; ctx.lineWidth = 4; ctx.lineCap = 'round';
+    for (let i = 0; i < 3; i++){
+      const bx = -o.w/4 + i*o.w/4;
+      const by = -o.h*0.4;
+      ctx.beginPath();
+      ctx.moveTo(bx - 6, by);
+      ctx.lineTo(bx + 6, by - 20 - i*5);
+      ctx.stroke();
+    }
+    // Череп
+    ctx.fillStyle = '#e0d8f0';
+    ctx.beginPath(); ctx.arc(0, -o.h - 5, 10, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#2a1040';
+    ctx.beginPath(); ctx.arc(-3, -o.h - 6, 2.5, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(3, -o.h - 6, 2.5, 0, Math.PI*2); ctx.fill();
+    // Свечение глаз
+    const gl = 0.5 + Math.sin(G.t*5)*0.4;
+    ctx.fillStyle = `rgba(168,85,247,${gl})`;
+    ctx.beginPath(); ctx.arc(-3, -o.h - 6, 1.5, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(3, -o.h - 6, 1.5, 0, Math.PI*2); ctx.fill();
+  }
+  else if (o.type==='skulltower'){
+    // Башня из черепов
+    for (let i = 0; i < 4; i++){
+      const sy = -o.h + 15 + i*18;
+      const sx = Math.sin(G.t*2 + i)*2;
+      ctx.fillStyle = i % 2 ? '#d8d0e8' : '#c0b8d0';
+      ctx.beginPath(); ctx.arc(sx, sy, 8, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = '#2a1040';
+      ctx.beginPath(); ctx.arc(sx - 3, sy - 1, 2, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(sx + 3, sy - 1, 2, 0, Math.PI*2); ctx.fill();
+    }
+    // Свечение
+    const gl = 0.3 + Math.sin(G.t*3)*0.2;
+    ctx.fillStyle = `rgba(168,85,247,${gl})`;
+    ctx.beginPath(); ctx.arc(0, -o.h*0.5, o.w*0.6, 0, Math.PI*2); ctx.fill();
+  }
+  else if (o.type==='mushroom'){
+    const sway = Math.sin(G.t*2 + o.phase)*2;
+    // Ножка
+    ctx.fillStyle = '#e0d8c8';
+    ctx.fillRect(-5, -o.h*0.6, 10, o.h*0.6);
+    // Шляпка
+    ctx.fillStyle = '#c02020';
+    ctx.beginPath();
+    ctx.ellipse(sway, -o.h*0.6, o.w*0.5, o.h*0.45, 0, Math.PI, 0);
+    ctx.fill();
+    // Точки
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(sway - 8, -o.h*0.75, 3, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(sway + 6, -o.h*0.8, 4, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.arc(sway, -o.h*0.68, 2.5, 0, Math.PI*2); ctx.fill();
+  }
+  else if (o.type==='thornvine'){
+    ctx.strokeStyle = '#2a5a2a'; ctx.lineWidth = 5;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.quadraticCurveTo(-10, -o.h*0.5, 0, -o.h);
+    ctx.stroke();
+    // Шипы
+    ctx.fillStyle = '#1a3a1a';
+    for (let i = 0; i < 6; i++){
+      const y = -o.h + i*(o.h/6);
+      const side = i % 2 ? -1 : 1;
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(side*8, y - 4);
+      ctx.lineTo(0, y + 2);
+      ctx.closePath(); ctx.fill();
+    }
+    // Светящийся цветок
+    const gl = 0.5 + Math.sin(G.t*3)*0.3;
+    ctx.fillStyle = `rgba(180,255,100,${gl})`;
+    ctx.beginPath(); ctx.arc(0, -o.h, 5, 0, Math.PI*2); ctx.fill();
+  }
+  else if (o.type==='portal'){
+    const pulse = 1 + Math.sin(G.t*3 + o.phase)*0.1;
+    // Внешнее кольцо
+    ctx.strokeStyle = '#f472b6';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.ellipse(0, -o.h*0.5, o.w*0.4*pulse, o.h*0.5*pulse, 0, 0, Math.PI*2);
+    ctx.stroke();
+    // Внутреннее кольцо
+    ctx.strokeStyle = '#38bdf8';
+    ctx.lineWidth = 2;
+    ctx.beginPath();
+    ctx.ellipse(0, -o.h*0.5, o.w*0.28*pulse, o.h*0.38*pulse, 0, 0, Math.PI*2);
+    ctx.stroke();
+    // Свечение
+    const grd = ctx.createRadialGradient(0, -o.h*0.5, 2, 0, -o.h*0.5, o.w*0.5);
+    grd.addColorStop(0, `rgba(244,114,182,${0.5 + Math.sin(G.t*4)*0.3})`);
+    grd.addColorStop(1, 'rgba(244,114,182,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.ellipse(0, -o.h*0.5, o.w*0.4*pulse, o.h*0.5*pulse, 0, 0, Math.PI*2); ctx.fill();
+    // Частицы вокруг
+    for (let i = 0; i < 4; i++){
+      const ang = G.t*2 + i*Math.PI/2;
+      const r = o.w*0.5 + Math.sin(G.t*3 + i)*5;
+      ctx.fillStyle = '#c084fc';
+      ctx.beginPath();
+      ctx.arc(Math.cos(ang)*r, -o.h*0.5 + Math.sin(ang)*r*1.2, 2, 0, Math.PI*2);
+      ctx.fill();
+    }
+  }
+  else if (o.type==='prism'){
+    const hue = (o.hue + G.t*30) % 360;
+    // Призма
+    ctx.fillStyle = `hsl(${hue},80%,55%)`;
+    ctx.beginPath();
+    ctx.moveTo(0, -o.h);
+    ctx.lineTo(-o.w/2, -o.h*0.3);
+    ctx.lineTo(0, 0);
+    ctx.lineTo(o.w/2, -o.h*0.3);
+    ctx.closePath(); ctx.fill();
+    // Грани
+    ctx.fillStyle = `hsl(${hue},90%,75%)`;
+    ctx.beginPath();
+    ctx.moveTo(0, -o.h);
+    ctx.lineTo(0, 0);
+    ctx.lineTo(o.w/2, -o.h*0.3);
+    ctx.closePath(); ctx.fill();
+    // Радужное свечение
+    const grd = ctx.createRadialGradient(0, -o.h*0.5, 2, 0, -o.h*0.5, o.w);
+    grd.addColorStop(0, `hsla(${hue},100%,70%,.6)`);
+    grd.addColorStop(1, `hsla(${hue},100%,70%,0)`);
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(0, -o.h*0.5, o.w, 0, Math.PI*2); ctx.fill();
   }
   else {
     ctx.fillStyle = '#3a2d5e';
@@ -1149,7 +1973,9 @@ function drawParticles(){
   }
   ctx.globalAlpha = 1;
 }
+
 const HEAL_BEAM_DURATION = 1.6;
+
 /* ================= ИСТОРИЯ ДЛЯ ТЕМПУС ================= */
 const HISTORY_SECONDS = 12;
 function saveHistorySnapshot(){
@@ -1174,7 +2000,9 @@ function saveHistorySnapshot(){
     mageRunPhase: mage.runPhase,
     obstacles: G.obstacles.map(o => ({...o})),
     coinList: G.coinList.map(c => ({...c})),
-    tornadoes: G.tornadoes.map(td => ({...td}))
+    tornadoes: G.tornadoes.map(td => ({...td})),
+    levelIndex: G.levelIndex,
+    levelStartDistance: G.levelStartDistance
   });
   const maxFrames = Math.ceil(HISTORY_SECONDS / 0.016) + 5;
   while (G.history.length > maxFrames) G.history.shift();
@@ -1208,6 +2036,10 @@ function rewindTime(seconds){
   G.obstacles = best.obstacles.map(o => ({...o}));
   G.coinList = best.coinList.map(c => ({...c}));
   G.tornadoes = best.tornadoes.map(td => ({...td}));
+  if (best.levelIndex !== undefined){
+    G.levelIndex = best.levelIndex;
+    G.levelStartDistance = best.levelStartDistance;
+  }
   mage.y = best.mageY;
   mage.vy = best.mageVy;
   mage.onGround = best.mageOnGround;
@@ -1226,6 +2058,7 @@ function rewindTime(seconds){
   if (G.levitateTime > 0) document.getElementById('levitate').textContent = '🕊 Левитация: ' + G.levitateTime.toFixed(1) + 'с';
   else document.getElementById('levitate').textContent = '🕊 Левитация: —';
   updateHealthUI();
+  updateLevelUI();
 
   const rw = document.getElementById('timerewind');
   rw.classList.remove('active');
@@ -1249,34 +2082,28 @@ function rewindTime(seconds){
   setTimeout(()=>{ G.rewindActive = false; }, 900);
 }
 
-
 function drawHealBeam(){
   if (G.healBeamTime <= 0) return;
 
-  // progress: 0 → 1 (появление/исчезновение)
   const total = HEAL_BEAM_DURATION;
-  const t = 1 - (G.healBeamTime / total);      // 0..1 от начала
-  // Плавное появление и затухание
+  const t = 1 - (G.healBeamTime / total);
   const fadeIn  = Math.min(1, t / 0.15);
   const fadeOut = Math.min(1, (1 - t) / 0.25);
   const strength = Math.min(fadeIn, fadeOut);
 
-  // Лёгкое мерцание
   const flicker = 0.85 + Math.sin(G.t * 22) * 0.08 + Math.sin(G.t * 37) * 0.05;
   const alpha = strength * flicker;
 
   const mageX = mage.x;
-  const mageTopY = G.groundY() + mage.y + POSE.headY - 20; // над шляпой
-  const beamTopY = -40;                                    // выше верхнего края экрана
+  const mageTopY = G.groundY() + mage.y + POSE.headY - 20;
+  const beamTopY = -40;
 
-  // Ширина луча: расширяется к низу
   const topW = 28;
   const bottomW = 90;
 
   ctx.save();
   ctx.globalCompositeOperation = 'lighter';
 
-  // Основной конус света
   const beamGrad = ctx.createLinearGradient(0, beamTopY, 0, mageTopY);
   beamGrad.addColorStop(0,   `rgba(255, 245, 180, 0)`);
   beamGrad.addColorStop(0.25,`rgba(255, 235, 140, ${0.35 * alpha})`);
@@ -1292,7 +2119,6 @@ function drawHealBeam(){
   ctx.closePath();
   ctx.fill();
 
-  // Яркое ядро луча
   const coreW = 14;
   const coreGrad = ctx.createLinearGradient(0, beamTopY, 0, mageTopY);
   coreGrad.addColorStop(0,   `rgba(255, 255, 230, 0)`);
@@ -1307,7 +2133,6 @@ function drawHealBeam(){
   ctx.closePath();
   ctx.fill();
 
-  // Мягкое свечение в точке попадания
   const glowR = 70 * strength;
   const glow = ctx.createRadialGradient(
     mageX, mageTopY, 4,
@@ -1321,7 +2146,6 @@ function drawHealBeam(){
   ctx.arc(mageX, mageTopY, glowR, 0, Math.PI * 2);
   ctx.fill();
 
-  // Тонкие «лучики» вокруг
   ctx.globalAlpha = 0.5 * alpha;
   ctx.strokeStyle = 'rgba(255, 240, 180, 0.9)';
   ctx.lineWidth = 1.5;
@@ -1337,7 +2161,6 @@ function drawHealBeam(){
 
   ctx.restore();
 
-  // Дополнительно: вертикальная вспышка во весь экран
   if (strength > 0.6){
     const fl = (strength - 0.6) / 0.4;
     ctx.save();
@@ -1352,9 +2175,97 @@ function drawHealBeam(){
   }
 }
 
+/* ================= UI УРОВНЯ ================= */
+function updateLevelUI(){
+  const lvl = currentLevel();
+  const meters = Math.floor(G.distance/10);
+  const startM = Math.floor(G.levelStartDistance/10);
+  const passed = Math.max(0, meters - startM);
+  const goal = lvl.goal;
+  const pct = Math.min(100, passed / goal * 100);
+
+  document.getElementById('levelName').textContent = lvl.name;
+  document.getElementById('levelNum').textContent = (G.levelIndex+1);
+  document.getElementById('levelGoal').textContent = goal;
+  document.getElementById('levelProgressFill').style.width = pct + '%';
+}
+
+function showLevelBanner(){
+  const lvl = currentLevel();
+  showSpellName(lvl.icon + ' ' + lvl.name, '#facc15');
+}
+
+/* ================= ПЕРЕХОД МЕЖДУ УРОВНЯМИ ================= */
+function checkLevelGoal(){
+  if (G.levelTransition || G.over) return;
+  const lvl = currentLevel();
+  const meters = Math.floor(G.distance/10);
+  const startM = Math.floor(G.levelStartDistance/10);
+  const passed = meters - startM;
+  if (passed >= lvl.goal){
+    if (G.levelIndex >= LEVELS.length - 1){
+      victory();
+    } else {
+      levelComplete();
+    }
+  }
+}
+
+function levelComplete(){
+  G.levelTransition = true;
+  G.running = false;
+  const lvl = currentLevel();
+  document.getElementById('lvlIcon').textContent = lvl.icon;
+  document.getElementById('lvlTitle').textContent = 'Уровень пройден!';
+  document.getElementById('lvlSub').textContent = lvl.name;
+  document.getElementById('lvlStats').innerHTML =
+    `Очки: <span class="key">${G.score}</span> · Монеты: <span class="key">${G.coins}</span><br>` +
+    `Следующий: <span class="key">${LEVELS[G.levelIndex+1].name}</span>`;
+  const btn = document.getElementById('lvlNextBtn');
+  btn.textContent = 'Следующий уровень';
+  btn.onclick = ()=>{ nextLevel(); };
+  document.getElementById('levelOverlay').style.display = 'flex';
+  if (navigator.vibrate) navigator.vibrate([60, 40, 60, 40, 120]);
+}
+
+function nextLevel(){
+  document.getElementById('levelOverlay').style.display = 'none';
+  G.levelIndex++;
+  G.levelStartDistance = G.distance;
+  G.obstacles = [];
+  G.coinList = [];
+  G.tornadoes = [];
+  G.spawnTimer = 1.2;
+  G.coinTimer = 1.0;
+  mage.y = 0; mage.vy = 0; mage.onGround = true; mage.jumps = 0;
+  G.history = [];
+  G.levelTransition = false;
+  G.running = true;
+  last = performance.now();
+  updateLevelUI();
+  showLevelBanner();
+  if (navigator.vibrate) navigator.vibrate(40);
+}
+
+function victory(){
+  G.levelTransition = true;
+  G.running = false;
+  const lvl = currentLevel();
+  document.getElementById('lvlIcon').textContent = '👑';
+  document.getElementById('lvlTitle').textContent = 'Победа!';
+  document.getElementById('lvlSub').textContent = 'Все 7 уровней пройдены';
+  document.getElementById('lvlStats').innerHTML =
+    `Финальный уровень: <span class="key">${lvl.name}</span><br>` +
+    `Очки: <span class="key">${G.score}</span> · Монеты: <span class="key">${G.coins}</span>`;
+  const btn = document.getElementById('lvlNextBtn');
+  btn.textContent = 'Играть снова';
+  btn.onclick = ()=>{ startGame(); };
+  document.getElementById('levelOverlay').style.display = 'flex';
+  if (navigator.vibrate) navigator.vibrate([120,60,120,60,200]);
+}
+
 /* ================= ОБНОВЛЕНИЕ ================= */
 function updateWorld(dt){
-  // Конфуз: игра замедляется и маг не может управляться
   if (G.confuseTime > 0){
     G.confuseTime -= dt;
     if (G.confuseTime <= 0){
@@ -1365,15 +2276,15 @@ function updateWorld(dt){
     G.invulnTime -= dt;
     if (G.invulnTime < 0) G.invulnTime = 0;
   }
-
-
+  if (G.landingGrace > 0){
+    G.landingGrace -= dt;
+    if (G.landingGrace < 0) G.landingGrace = 0;
+  }
   if (G.healBeamTime > 0){
     G.healBeamTime -= dt;
     if (G.healBeamTime < 0) G.healBeamTime = 0;
   }
 
-
-  // Замедление во время конфуза
   const slowFactor = G.confuseTime > 0 ? 0.35 : 1;
   G.speed = (G.baseSpeed + Math.min(G.distance*0.01, 90)) * slowFactor;
 
@@ -1383,22 +2294,19 @@ function updateWorld(dt){
   if (!G.rewindActive){
     saveHistorySnapshot();
   }
-if (G.levitateTime > 0){
-  G.levitateTime -= dt;
-  if (G.levitateTime <= 0){
-    G.levitateTime = 0;
-    document.getElementById('levitate').textContent = '🕊 Левитация: —';
-    mage.vy = 0;
-    mage.onGround = false;
-    G.landingGrace = 0.6;   // 0.6с неуязвимости на приземление
-  } else {
-    document.getElementById('levitate').textContent = '🕊 Левитация: ' + G.levitateTime.toFixed(1) + 'с';
+
+  if (G.levitateTime > 0){
+    G.levitateTime -= dt;
+    if (G.levitateTime <= 0){
+      G.levitateTime = 0;
+      document.getElementById('levitate').textContent = '🕊 Левитация: —';
+      mage.vy = 0;
+      mage.onGround = false;
+      G.landingGrace = 0.6;
+    } else {
+      document.getElementById('levitate').textContent = '🕊 Левитация: ' + G.levitateTime.toFixed(1) + 'с';
+    }
   }
-}
-if (G.landingGrace > 0){
-  G.landingGrace -= dt;
-  if (G.landingGrace < 0) G.landingGrace = 0;
-}
 
   if (G.ghostTime > 0){
     G.ghostTime -= dt;
@@ -1423,8 +2331,7 @@ if (G.landingGrace > 0){
   G.spawnTimer -= dt;
   if (G.spawnTimer <= 0){
     spawnObstacle();
-  const base = Math.max(1.6, 2.6 - G.distance*0.0003);
-G.spawnTimer = 8.0 + Math.random()*0.8;
+    G.spawnTimer = 2.0 + Math.random()*1.2;
   }
 
   G.coinTimer -= dt;
@@ -1436,13 +2343,11 @@ G.spawnTimer = 8.0 + Math.random()*0.8;
 
   updateTornadoes(dt);
 
-  // Препятствия: столкновение → конфуз (если не левитируем, не призрак, не неуязвим)
-  const invincible = G.ghostTime > 0 || G.levitateTime > 0 || G.invulnTime > 0 || G.confuseTime > 0;
+  const invincible = G.ghostTime > 0 || G.levitateTime > 0 || G.invulnTime > 0 || G.confuseTime > 0 || G.landingGrace > 0;
   for (let i=G.obstacles.length-1;i>=0;i--){
     const o = G.obstacles[i];
     o.x -= G.speed*dt;
 
-    // Учёт пройденных препятствий (для очков)
     if (!o.passed && o.x + o.w/2 < mage.x){
       o.passed = true;
     }
@@ -1525,6 +2430,9 @@ G.spawnTimer = 8.0 + Math.random()*0.8;
   document.getElementById('score').textContent = G.score;
   document.getElementById('coins').textContent = G.coins;
   document.getElementById('dist').textContent = Math.floor(G.distance/10);
+
+  updateLevelUI();
+  checkLevelGoal();
 }
 
 function draw(){
@@ -1538,9 +2446,8 @@ function draw(){
   drawBackground();
   drawGround();
 
-   for (const td of G.tornadoes) drawTornado(td);
+  for (const td of G.tornadoes) drawTornado(td);
 
-  // Золотой луч — под монетами/препятствиями/магом, но над фоном
   drawHealBeam();
 
   for (const c of G.coinList) drawCoin(c);
@@ -1570,7 +2477,7 @@ function loop(now){
   const dt = Math.min((now - last)/1000, 0.05);
   last = now;
   G.t += dt;
-  if (G.running && !G.over){
+  if (G.running && !G.over && !G.levelTransition){
     updateWorld(dt);
     updateMage(dt);
   } else {
@@ -1586,7 +2493,7 @@ function loop(now){
 
 /* ================= СТАРТ / КОНЕЦ ================= */
 function startGame(){
-  G.running = true; G.over = false;
+  G.running = true; G.over = false; G.levelTransition = false;
   G.t = 0; G.distance = 0; G.score = 0; G.coins = 0;
   G.obstacles = []; G.coinList = []; G.particles = [];
   G.spawnTimer = 1.4; G.coinTimer = 1.0;
@@ -1601,7 +2508,10 @@ function startGame(){
   G.confuseTime = 0;
   G.invulnTime = 0;
   G.damageFlash = 0;
-healCooldown = 0;
+  G.landingGrace = 0;
+  G.levelIndex = 0;
+  G.levelStartDistance = 0;
+  healCooldown = 0;
   mage.x = Math.max(60, W*0.08);
   mage.y = 0; mage.vy = 0; mage.onGround = true; mage.jumps = 0;
   mage.castPose = 0;
@@ -1612,7 +2522,10 @@ healCooldown = 0;
   document.getElementById('magnet').textContent = '🧲 Магнифико: —';
   document.getElementById('levitate').textContent = '🕊 Левитация: —';
   document.getElementById('overlay').style.display = 'none';
+  document.getElementById('levelOverlay').style.display = 'none';
   updateHealthUI();
+  updateLevelUI();
+  showLevelBanner();
   last = performance.now();
 }
 
@@ -1620,9 +2533,11 @@ function gameOver(){
   G.over = true; G.running = false;
   G.shake = 1;
   startCast('destroy');
+  const lvl = currentLevel();
   document.getElementById('overlay').style.display = 'flex';
   document.getElementById('overlay').innerHTML = `
     <h1>Игра окончена</h1>
+    <p>Уровень: <span class="key">${lvl.name}</span> (${G.levelIndex+1} / ${LEVELS.length})</p>
     <p>Очки: <span class="key">${G.score}</span></p>
     <p>Монеты: <span class="key">${G.coins}</span></p>
     <p>Пройдено: <span class="key">${Math.floor(G.distance/10)} м</span></p>
@@ -1635,7 +2550,7 @@ function gameOver(){
 /* ================= УПРАВЛЕНИЕ ================= */
 function onTapJump(e){
   if (e) e.preventDefault();
-  if (!G.running || G.over) return;
+  if (!G.running || G.over || G.levelTransition) return;
   jump();
 }
 window.addEventListener('keydown', e=>{
@@ -1722,9 +2637,8 @@ async function requestMicAndStart(){
   startGame();
 }
 
-
 function castHeal(){
-  if (!G.running || G.over) return;
+  if (!G.running || G.over || G.levelTransition) return;
   G.healBeamTime = HEAL_BEAM_DURATION;
   if (G.health >= G.maxHealth){
     showSpellName('КОНТРА ДОЛОРЕМ', '#f9a8d4');
@@ -1739,7 +2653,6 @@ function castHeal(){
   setTimeout(()=>{ document.getElementById('spell').textContent = '✨ Заклинание: готово'; }, 1400);
   updateHealthUI();
 
-  // Целебные частицы
   for (let i=0;i<40;i++){
     G.particles.push({
       x: mage.x + (Math.random()*40-20),
@@ -1757,7 +2670,7 @@ function castHeal(){
 function handleVoice(txt){
   if (!txt) return;
   const now = performance.now();
- if (/(контра|кантра|contra)/.test(txt) && /(долорем|долорэм|долор|dolorem|dolor)/.test(txt)){
+  if (/(контра|кантра|contra)/.test(txt) && /(долорем|долорэм|долор|dolorem|dolor)/.test(txt)){
     if (now - healCooldown > 1500){ healCooldown = now; castHeal(); }
   }
   if (/(фокус|покус|focus|pokus)/.test(txt)){
@@ -1781,7 +2694,7 @@ function handleVoice(txt){
 }
 
 function castGhost(){
-  if (!G.running || G.over) return;
+  if (!G.running || G.over || G.levelTransition) return;
   G.ghostTime = 15;
   startCast('ghost');
   showSpellName('ФОКУС ПОКУС', '#7dd3fc');
@@ -1792,7 +2705,7 @@ function castGhost(){
 }
 
 function castDestroy(){
-  if (!G.running || G.over) return;
+  if (!G.running || G.over || G.levelTransition) return;
   startCast('destroy');
   showSpellName('АБРАКАДАБРА', '#fbbf24');
   document.getElementById('spell').textContent = '💥 Абракадабра!';
@@ -1821,7 +2734,7 @@ function castDestroy(){
 }
 
 function castMagnet(){
-  if (!G.running || G.over) return;
+  if (!G.running || G.over || G.levelTransition) return;
   G.magnetTime = 10;
   startCast('magnet');
   showSpellName('МАГНИФИКО', '#c084fc');
@@ -1832,7 +2745,7 @@ function castMagnet(){
 }
 
 function castTempus(){
-  if (!G.running || G.over) return;
+  if (!G.running || G.over || G.levelTransition) return;
   startCast('tempus');
   showSpellName('ТЕМПУС', '#38bdf8');
   document.getElementById('spell').textContent = '⏳ Темпус!';
@@ -1842,7 +2755,7 @@ function castTempus(){
 }
 
 function castTornado(){
-  if (!G.running || G.over) return;
+  if (!G.running || G.over || G.levelTransition) return;
   startCast('tornado');
   showSpellName('ТОРНАДО', '#a3e635');
   document.getElementById('spell').textContent = '🌪 Торнадо!';
@@ -1852,7 +2765,7 @@ function castTornado(){
 }
 
 function castLevitate(){
-  if (!G.running || G.over) return;
+  if (!G.running || G.over || G.levelTransition) return;
   G.levitateTime = 10;
   G.levitateTarget = -260;
   G.levitateHeight = 260;
@@ -1922,6 +2835,7 @@ window.addEventListener('resize', ()=>{
 });
 
 mage.x = Math.max(60, W*0.08);
+updateLevelUI();
 loop(performance.now());
 </script>
 </body>
