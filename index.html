@@ -73,7 +73,7 @@
   #healthbar .hearts{position:absolute;inset:0;display:flex;align-items:center;
                      justify-content:center;font-size:11px;font-weight:700;
                      color:#fff;text-shadow:0 1px 2px #000;letter-spacing:1px;}
-#spell-popup{display:none !important;}
+
 #overlay{
   position:fixed;inset:0;background:rgba(5,3,20,.92);
   display:flex;flex-direction:column;justify-content:flex-start;align-items:center;
@@ -94,6 +94,48 @@
 #overlay button:disabled{opacity:.6;cursor:default;}
 .micro-note{font-size:clamp(11px,3vw,13px);color:#a9a4d4;margin-top:8px;
             line-height:1.35;margin-bottom:8px;}
+
+
+button,
+#mic-btn,
+#overlay button {
+  -webkit-tap-highlight-color: transparent; /* убирает синюю/серую вспышку при тапе на iOS/Android */
+  -webkit-touch-callout: none;              /* убирает меню по долгому тапу (iOS) */
+  -webkit-user-select: none;                /* запрет выделения текста */
+  user-select: none;
+  touch-action: manipulation;               /* убирает 300мс задержку и зум по двойному тапу */
+  outline: none;                            /* убирает рамку фокуса */
+  appearance: none;                         /* убирает нативные стили кнопок */
+  -webkit-appearance: none;
+  border-radius: inherit;                   /* чтобы appearance:none не убил скругление — на всякий */
+}
+
+/* Убираем реакцию на hover/active/focus */
+button:hover,
+button:focus,
+button:focus-visible,
+button:active,
+#mic-btn:hover,
+#mic-btn:focus,
+#mic-btn:active {
+  outline: none;
+  box-shadow: inherit;   /* или впиши свои значения, если хочешь сохранить тень */
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 </style>
 </head>
@@ -348,7 +390,6 @@ function updateHealthUI(){
   }
   text.textContent = hearts;
 }
-
 /* ================= РИСОВАНИЕ МАГА ================= */
 function drawMage(){
   const gy = G.groundY() + mage.y;
@@ -362,17 +403,18 @@ function drawMage(){
   ctx.save();
   ctx.translate(x, gy);
 
-  // При конфузе маг покачивается из стороны в сторону
+  // Наклон ВПЕРЁД (вправо) при беге + покачивание при конфузе
+  const runLean = G.running && mage.onGround && !levitate && !confused ? 0.14 : 0;
   const confuseTilt = confused ? Math.sin(mage.confuseWobble)*0.25 : 0;
-  ctx.rotate(mage.lean*0.5 + confuseTilt);
+  ctx.rotate(runLean + mage.lean*0.25 + confuseTilt);
 
-  // Мигание при неуязвимости (после удара)
+  // Мигание при неуязвимости
   if (G.invulnTime > 0 && G.confuseTime <= 0){
     ctx.globalAlpha = 0.5 + Math.sin(G.t*25)*0.5;
   }
 
   const run = G.running && mage.onGround && !levitate && !confused;
-  const swing = run ? Math.sin(t) : 0;
+  const swing  = run ? Math.sin(t) : 0;
   const swing2 = run ? Math.sin(t + Math.PI) : 0;
   const bob = run ? Math.abs(Math.sin(t))*3 : (levitate ? 0 : Math.sin(mage.breath)*1.4);
   const breathe = Math.sin(mage.breath) * 1.2;
@@ -383,10 +425,9 @@ function drawMage(){
 
   const cast = mage.castPose;
   const armRaise = cast * 40;
-
   const levSway = levitate ? Math.sin(mage.levFloat*0.8)*3 : 0;
 
-  // Ауры
+  /* ---------- АУРЫ ---------- */
   if (ghost){
     const pulse = 1 + Math.sin(G.t*8)*0.08;
     ctx.save();
@@ -399,7 +440,6 @@ function drawMage(){
     ctx.restore();
     ctx.globalAlpha = 0.55;
   }
-
   if (magnet && !ghost){
     const pulse = 1 + Math.sin(G.t*6)*0.12;
     ctx.save();
@@ -411,7 +451,6 @@ function drawMage(){
     ctx.beginPath(); ctx.arc(0,-40,90*pulse,0,Math.PI*2); ctx.fill();
     ctx.restore();
   }
-
   if (levitate){
     const pulse = 1 + Math.sin(G.t*5)*0.1;
     ctx.save();
@@ -424,7 +463,6 @@ function drawMage(){
     ctx.beginPath(); ctx.arc(0,-30,110*pulse,0,Math.PI*2); ctx.fill();
     ctx.restore();
   }
-
   if (G.rewindActive){
     ctx.save();
     ctx.globalAlpha = 0.4 * (0.6 + Math.sin(G.t*14)*0.4);
@@ -436,6 +474,7 @@ function drawMage(){
     ctx.restore();
   }
 
+  /* ---------- ТЕНЬ ---------- */
   if (!ghost && !levitate){
     ctx.save();
     ctx.globalAlpha = 0.28;
@@ -445,7 +484,6 @@ function drawMage(){
     ctx.fill();
     ctx.restore();
   }
-
   if (levitate){
     ctx.save();
     const groundOffset = mage.y;
@@ -463,19 +501,21 @@ function drawMage(){
   const robeLight= ghost ? '#8ec7e8' : '#7c5fd6';
   const hatDark  = ghost ? '#2c5570' : '#2a1d4f';
 
-  // При конфузе ноги подкашиваются, маг слегка «танцует»
+  /* ---------- НОГИ (асимметричные, ведущая — правая) ---------- */
   const confuseLegSway = confused ? Math.sin(mage.confuseWobble*1.5)*8 : 0;
 
-  const legSwing = mage.onGround ? swing*16 : -8;
-  const legSwing2 = mage.onGround ? swing2*16 : 12;
-
-  const levLegSway = levitate ? Math.sin(mage.levFloat*1.2)*6 : 0;
+  // Асимметрия: правая нога (ведущая) выносится сильнее, левая — толчковая
+  const legSwingR = mage.onGround ? swing*20  : -12;   // ведущая
+  const legSwingL = mage.onGround ? swing2*12 :  8;    // толчковая
+  const levLegSway  = levitate ? Math.sin(mage.levFloat*1.2)*6 : 0;
   const levLegSway2 = levitate ? Math.sin(mage.levFloat*1.2 + Math.PI)*6 : 0;
 
-  const legEndL = levitate ? hipY+24 + levLegSway : hipY+34;
-  const legEndLx = levitate ? -8 + levLegSway*0.5 : -4 + legSwing + confuseLegSway;
-  const legEndR = levitate ? hipY+24 + levLegSway2 : hipY+34;
-  const legEndRx = levitate ? 8 + levLegSway2*0.5 : 4 + legSwing2 - confuseLegSway;
+  // Левая (задняя) нога
+  const legEndL  = levitate ? hipY+24 + levLegSway  : hipY+34;
+  const legEndLx = levitate ? -8 + levLegSway*0.5  : -6 + legSwingL + confuseLegSway;
+  // Правая (передняя) нога — уходит дальше вправо
+  const legEndR  = levitate ? hipY+24 + levLegSway2 : hipY+34;
+  const legEndRx = levitate ? 8 + levLegSway2*0.5  : 6 + legSwingR - confuseLegSway;
 
   ctx.strokeStyle = robeDark; ctx.lineWidth = 9; ctx.lineCap='round';
   ctx.beginPath();
@@ -483,7 +523,7 @@ function drawMage(){
   if (levitate){
     ctx.quadraticCurveTo(-4 - 6, hipY+12, legEndLx, legEndL);
   } else {
-    ctx.lineTo(-4 + legSwing*0.5 + confuseLegSway*0.5, hipY+18);
+    ctx.lineTo(-4 + legSwingL*0.5 + confuseLegSway*0.5, hipY+18);
     ctx.lineTo(legEndLx, legEndL);
   }
   ctx.stroke();
@@ -497,7 +537,7 @@ function drawMage(){
   if (levitate){
     ctx.quadraticCurveTo(4 + 6, hipY+12, legEndRx, legEndR);
   } else {
-    ctx.lineTo(4 + legSwing2*0.5 - confuseLegSway*0.5, hipY+18);
+    ctx.lineTo(4 + legSwingR*0.5 - confuseLegSway*0.5, hipY+18);
     ctx.lineTo(legEndRx, legEndR);
   }
   ctx.stroke();
@@ -505,6 +545,7 @@ function drawMage(){
   ctx.beginPath();
   ctx.ellipse(legEndRx, legEndR+1, 8, 4, 0, 0, Math.PI*2); ctx.fill();
 
+  /* ---------- ТЕЛО ---------- */
   ctx.save();
   ctx.translate(0, hipY);
   const sway = mage.robeSway + (levitate ? Math.sin(G.t*4)*0.12 : 0) + (confused ? Math.sin(mage.confuseWobble)*0.15 : 0);
@@ -545,13 +586,15 @@ function drawMage(){
   ctx.fillRect(-4, -13, 8, 6);
   ctx.restore();
 
+  /* ---------- РУКИ (асимметричные) ---------- */
   const armY = shoulderY + 4;
-  const laSwing = mage.onGround ? swing2*20 : (levitate ? -50 : -30);
-  const raSwing = mage.onGround ? swing*20 : (levitate ? 50 : 25);
+  // Ведущая рука (правая) машет сильнее и выносится вперёд
+  const laSwing = mage.onGround ? swing2*14 : (levitate ? -50 : -22);
+  const raSwing = mage.onGround ? swing*26  : (levitate ?  50 :  30);
 
-  // При конфузе руки хватаются за голову
   const confuseHandOffset = confused ? -30 : 0;
 
+  // Левая рука
   ctx.strokeStyle = robeMid; ctx.lineWidth = 7;
   ctx.beginPath();
   ctx.moveTo(-10, armY);
@@ -571,11 +614,12 @@ function drawMage(){
   ctx.fillStyle = skin;
   ctx.beginPath(); ctx.arc(lHandX, lHandY, 4.5, 0, Math.PI*2); ctx.fill();
 
+  // Правая рука (ведущая) — сильнее выносится вперёд
   ctx.strokeStyle = robeLight; ctx.lineWidth = 7;
   ctx.beginPath();
   ctx.moveTo(10, armY);
-  const handX = levitate ? 10 + 26 : (confused ? 8 : 10 + 6 + raSwing*0.4);
-  const handY = levitate ? armY + 2 - levSway : (confused ? headY - 4 : armY + 25 + raSwing*0.5 - armRaise);
+  const handX = levitate ? 10 + 26 : (confused ? 8 : 14 + 6 + raSwing*0.5);
+  const handY = levitate ? armY + 2 - levSway : (confused ? headY - 4 : armY + 22 + raSwing*0.6 - armRaise);
   if (levitate){
     ctx.lineTo(10 + 18, armY - 4 - levSway);
     ctx.lineTo(handX, handY);
@@ -583,13 +627,14 @@ function drawMage(){
     ctx.lineTo(10 + 12, armY - 12);
     ctx.lineTo(handX, handY);
   } else {
-    ctx.lineTo(10 + 8, armY + 12 + raSwing*0.3 - armRaise*0.4);
+    ctx.lineTo(12 + 8, armY + 10 + raSwing*0.3 - armRaise*0.4);
     ctx.lineTo(handX, handY);
   }
   ctx.stroke();
   ctx.fillStyle = skin;
   ctx.beginPath(); ctx.arc(handX, handY, 4.5, 0, Math.PI*2); ctx.fill();
 
+  // Свечение от заклинания в руке
   if (cast > 0){
     const glow = cast;
     let col = '251,191,36';
@@ -608,64 +653,79 @@ function drawMage(){
     ctx.beginPath(); ctx.arc(handX, handY, 4*glow, 0, Math.PI*2); ctx.fill();
   }
 
+  /* ---------- ШЕЯ ---------- */
   ctx.strokeStyle = skin; ctx.lineWidth = 6;
-  ctx.beginPath(); ctx.moveTo(0, shoulderY+2); ctx.lineTo(0, headY+10); ctx.stroke();
+  // Шея чуть наклонена вперёд (вправо)
+  ctx.beginPath(); ctx.moveTo(1, shoulderY+2); ctx.lineTo(2, headY+10); ctx.stroke();
 
+  /* ---------- ГОЛОВА В ПРОФИЛЬ ---------- */
+  // Голова сдвинута вперёд (вправо) относительно тела
+  const headX = 3;
   ctx.fillStyle = skin;
   ctx.beginPath();
-  ctx.ellipse(0, headY, 10, 11, 0, 0, Math.PI*2); ctx.fill();
+  ctx.ellipse(headX, headY, 10, 11, 0, 0, Math.PI*2); ctx.fill();
 
+  // Нос (треугольник справа) — задаёт направление взгляда
+  ctx.fillStyle = skin;
+  ctx.beginPath();
+  ctx.moveTo(headX + 8, headY - 1);
+  ctx.lineTo(headX + 13, headY + 1.5);
+  ctx.lineTo(headX + 8, headY + 3.5);
+  ctx.closePath();
+  ctx.fill();
+
+  // Борода/подбородок — смещены вперёд
   ctx.fillStyle = ghost ? '#cfe9f7' : '#e8e8f0';
   ctx.beginPath();
-  ctx.moveTo(-8, headY+4);
-  ctx.quadraticCurveTo(-6, headY+20, 0, headY+22);
-  ctx.quadraticCurveTo(6, headY+20, 8, headY+4);
-  ctx.quadraticCurveTo(0, headY+10, -8, headY+4);
+  ctx.moveTo(headX - 4, headY+5);
+  ctx.quadraticCurveTo(headX + 6, headY+20, headX + 12, headY+8);
+  ctx.quadraticCurveTo(headX + 4, headY+14, headX - 4, headY+5);
   ctx.closePath(); ctx.fill();
 
-  // Глаза
+  /* ---------- ГЛАЗ (один, в профиль) ---------- */
   const blink = (Math.sin(G.t*3.1) > 0.97) ? 0.15 : 1;
   if (confused){
-    // Крестики-глазки при конфузе
+    // Крестик-глаз при конфузе (смещён вправо)
     ctx.strokeStyle = '#1a1430';
     ctx.lineWidth = 1.8;
-    const ex = 4, ey = headY-2, es = 3;
-    // Левый глаз — X
-    ctx.beginPath();
-    ctx.moveTo(-ex-es, ey-es); ctx.lineTo(-ex+es, ey+es);
-    ctx.moveTo(-ex+es, ey-es); ctx.lineTo(-ex-es, ey+es);
-    ctx.stroke();
-    // Правый глаз — X
+    const ex = headX + 3, ey = headY - 2, es = 3;
     ctx.beginPath();
     ctx.moveTo(ex-es, ey-es); ctx.lineTo(ex+es, ey+es);
     ctx.moveTo(ex+es, ey-es); ctx.lineTo(ex-es, ey+es);
     ctx.stroke();
   } else {
+    // Один глаз ближе к носу
     ctx.fillStyle = ghost ? '#e0f6ff' : '#1a1430';
-    ctx.beginPath(); ctx.ellipse(-4, headY-2, 1.8, 2.4*blink, 0, 0, Math.PI*2); ctx.fill();
-    ctx.beginPath(); ctx.ellipse(4, headY-2, 1.8, 2.4*blink, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath();
+    ctx.ellipse(headX + 4, headY - 2, 1.8, 2.4*blink, 0, 0, Math.PI*2);
+    ctx.fill();
     if (!ghost){
-      ctx.fillStyle = levitate ? '#fde68a' : (magnet ? '#d8b4fe' : (G.rewindActive ? '#7dd3fc' : '#7dd3fc'));
-      ctx.beginPath(); ctx.arc(-4, headY-2.5, 0.7*blink, 0, Math.PI*2); ctx.fill();
-      ctx.beginPath(); ctx.arc(4, headY-2.5, 0.7*blink, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = levitate ? '#fde68a' : (magnet ? '#d8b4fe' : '#7dd3fc');
+      ctx.beginPath(); ctx.arc(headX + 4, headY - 2.5, 0.7*blink, 0, Math.PI*2); ctx.fill();
     }
   }
 
-  // Шляпа
+  /* ---------- ШЛЯПА (смещена назад = влево) ---------- */
+  const hatX = headX - 2; // назад
   ctx.fillStyle = hatDark;
+  // Поля
   ctx.beginPath();
-  ctx.ellipse(0, headY-8, 20, 5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.ellipse(hatX - 1, headY-8, 20, 5, 0, 0, Math.PI*2); ctx.fill();
+  // Конус, наклонён назад
   ctx.beginPath();
-  ctx.moveTo(-11, headY-8);
-  ctx.quadraticCurveTo(-6, headY-30, 2, headY-40);
-  ctx.quadraticCurveTo(6, headY-30, 11, headY-8);
+  ctx.moveTo(hatX - 12, headY-8);
+  ctx.quadraticCurveTo(hatX - 10, headY-30, hatX - 6, headY-42);
+  ctx.quadraticCurveTo(hatX + 2, headY-30, hatX + 10, headY-8);
   ctx.closePath(); ctx.fill();
+  // Лента
   ctx.fillStyle = '#c9a227';
   ctx.beginPath();
-  ctx.ellipse(0, headY-9, 11.5, 3.5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.ellipse(hatX - 1, headY-9, 11.5, 3.5, 0, 0, Math.PI*2); ctx.fill();
+  // Звезда
   ctx.fillStyle = ghost ? '#bde9ff' : (levitate ? '#fef3c7' : (magnet ? '#e9d5ff' : (G.rewindActive ? '#7dd3fc' : '#facc15')));
-  drawStar(0, headY-13, 3, 5);
+  drawStar(hatX - 2, headY-13, 3, 5);
 
+  // Обводка призрака
   if (ghost){
     ctx.globalAlpha = 0.6 + Math.sin(G.t*10)*0.2;
     ctx.strokeStyle = 'rgba(180,240,255,.9)';
@@ -675,7 +735,7 @@ function drawMage(){
 
   ctx.restore();
 
-  // Конфуз: звёздочки и круги над головой
+  /* ---------- ЗВЁЗДЫ ПРИ КОНФУЗЕ ---------- */
   if (confused){
     const headWorldY = gy + POSE.headY - 20;
     const cx = x;
@@ -685,15 +745,12 @@ function drawMage(){
       const ang = mage.confuseWobble + i * (Math.PI*2/3);
       const rx = Math.cos(ang) * 22;
       const ry = Math.sin(ang) * 7;
-      const starX = cx + rx;
-      const starY = cy + ry;
       ctx.fillStyle = '#facc15';
       ctx.globalAlpha = 0.7 + Math.sin(mage.confuseWobble*2 + i)*0.3;
-      drawStar(starX, starY, 5, 5);
+      drawStar(cx + rx, cy + ry, 5, 5);
     }
     ctx.restore();
 
-    // Круговые линии
     ctx.save();
     ctx.strokeStyle = 'rgba(250,204,21,.35)';
     ctx.lineWidth = 1.5;
@@ -703,6 +760,7 @@ function drawMage(){
     ctx.restore();
   }
 
+  /* ---------- КРЫЛЬЯ ПРИ ЛЕВИТАЦИИ ---------- */
   if (levitate){
     const wingY = gy - 55;
     ctx.save();
