@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
-<title>Маг Бродилка</title>
+<title>Wizardrunner</title>
 <style>
   html,body{margin:0;padding:0;overflow:hidden;background:#0b0a1a;height:100%;
             font-family:'Segoe UI',system-ui,sans-serif;color:#fff;
@@ -277,13 +277,13 @@ function showSpellName(name, color){
 }
 
 function jump(){
-  if (!G.running || G.over) return;
+   if (!G.running || G.over) return;
   if (G.levitateTime > 0) return;
   if (G.confuseTime > 0) return; // во время конфуза прыгать нельзя
-  if (mage.jumps < 2){
-  mage.vy = mage.jumps === 0 ? -980 : -880;
+  if (mage.onGround){
+    mage.vy = -1200;
     mage.onGround = false;
-    mage.jumps++;
+    mage.jumps = 1;
     for (let i=0;i<10;i++){
       G.particles.push({
         x:mage.x+(Math.random()*20-10), y:G.groundY()+mage.y,
@@ -1544,7 +1544,7 @@ function startGame(){
   G.invulnTime = 0;
   G.damageFlash = 0;
 healCooldown = 0;
-  mage.x = Math.max(90, W*0.18);
+  mage.x = Math.max(60, W*0.08);
   mage.y = 0; mage.vy = 0; mage.onGround = true; mage.jumps = 0;
   mage.castPose = 0;
   document.getElementById('score').textContent = '0';
@@ -1860,10 +1860,10 @@ window.addEventListener('resize', ()=>{
       ph: Math.random()*6
     });
   }
-  mage.x = Math.max(90, W*0.18);
+  mage.x = Math.max(60, W*0.08);
 });
 
-mage.x = Math.max(90, W*0.18);
+mage.x = Math.max(60, W*0.08);
 loop(performance.now());
 </script>
 </body>
