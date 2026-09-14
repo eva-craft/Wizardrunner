@@ -1,0 +1,1870 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no,viewport-fit=cover">
+<title>Маг Бродилка</title>
+<style>
+  html,body{margin:0;padding:0;overflow:hidden;background:#0b0a1a;height:100%;
+            font-family:'Segoe UI',system-ui,sans-serif;color:#fff;
+            -webkit-user-select:none;user-select:none;touch-action:none;}
+  #game{display:block;width:100vw;height:100vh;image-rendering:pixelated;}
+  #ui{position:fixed;top:0;left:0;right:0;padding:10px 14px;
+      display:flex;justify-content:space-between;pointer-events:none;
+      font-size:15px;text-shadow:0 2px 4px #000;z-index:5;}
+  #hud{display:flex;flex-direction:column;gap:4px;}
+  #status{text-align:right;max-width:55%;}
+  .badge{display:inline-block;padding:3px 9px;border-radius:20px;
+         background:rgba(0,0,0,.45);border:1px solid rgba(255,255,255,.15);
+         margin:2px 0;font-size:13px;}
+  #mic-btn{position:fixed;bottom:18px;left:50%;transform:translateX(-50%);
+           padding:14px 26px;border-radius:40px;border:none;
+           background:linear-gradient(135deg,#7b3fe4,#e94fa1);
+           color:#fff;font-size:15px;font-weight:600;letter-spacing:.5px;
+           box-shadow:0 6px 24px rgba(123,63,228,.6);z-index:10;
+           cursor:pointer;touch-action:manipulation;}
+  #mic-btn.listening{background:linear-gradient(135deg,#19d36b,#0fa85a);
+                     box-shadow:0 0 30px #19d36b;animation:pulse 1.2s infinite;}
+  @keyframes pulse{0%,100%{transform:translateX(-50%) scale(1);}
+                   50%{transform:translateX(-50%) scale(1.06);}}
+  #overlay{position:fixed;inset:0;background:rgba(5,3,20,.92);
+           display:flex;flex-direction:column;justify-content:center;align-items:center;
+           text-align:center;padding:24px;z-index:20;overflow-y:auto;}
+  #overlay h1{font-size:34px;margin:0 0 8px;
+              background:linear-gradient(135deg,#c084fc,#f472b6,#38bdf8);
+              -webkit-background-clip:text;background-clip:text;color:transparent;}
+  #overlay p{margin:6px 0;font-size:15px;color:#c9c5e8;max-width:480px;line-height:1.5;}
+  #overlay .key{color:#facc15;font-weight:700;}
+  #overlay button{margin-top:22px;padding:14px 34px;border-radius:40px;border:none;
+                  background:linear-gradient(135deg,#7b3fe4,#e94fa1);color:#fff;
+                  font-size:17px;font-weight:700;box-shadow:0 6px 24px rgba(233,79,161,.5);
+                  cursor:pointer;touch-action:manipulation;}
+  #overlay button:disabled{opacity:.6;cursor:default;}
+  .micro-note{font-size:13px;color:#a9a4d4;margin-top:10px;line-height:1.4;}
+  #hint{position:fixed;bottom:78px;left:50%;transform:translateX(-50%);
+        font-size:12px;color:#ffe;opacity:.75;z-index:6;pointer-events:none;
+        text-shadow:0 2px 4px #000;white-space:nowrap;text-align:center;}
+  .flash{position:fixed;inset:0;pointer-events:none;z-index:8;opacity:0;
+         transition:opacity .25s;}
+  #spell-popup{position:fixed;top:32%;left:50%;transform:translate(-50%,-50%) scale(0.6);
+               font-size:44px;font-weight:900;letter-spacing:1px;z-index:15;
+               pointer-events:none;opacity:0;white-space:nowrap;
+               text-shadow:0 0 20px currentColor,0 4px 12px #000;
+               transition:opacity .3s, transform .5s cubic-bezier(.2,1.6,.4,1);}
+  #spell-popup.show{opacity:10;transform:translate(-50%,-50%) scale(1);}
+  #timerewind{position:fixed;inset:0;pointer-events:none;z-index:9;opacity:0;
+              background:radial-gradient(circle at center, rgba(56,189,248,.15), rgba(56,189,248,.5));
+              transition:opacity .2s;}
+  #timerewind.active{opacity:1;animation:rewindPulse .6s ease-out;}
+  @keyframes rewindPulse{0%{opacity:0;}30%{opacity:1;}100%{opacity:0;}}
+  /* Эффект конфуза */
+  #confuse-flash{position:fixed;inset:0;pointer-events:none;z-index:9;opacity:0;
+                 background:radial-gradient(circle at center, rgba(239,68,68,0) 30%, rgba(239,68,68,.7));
+                 transition:opacity .15s;}
+  #confuse-flash.active{animation:confusePulse .5s ease-out;}
+  @keyframes confusePulse{0%{opacity:0;}20%{opacity:1;}100%{opacity:0;}}
+  /* Полоска здоровья */
+  #healthbar{position:fixed;top:110px;left:14px;width:180px;height:14px;
+             background:rgba(0,0,0,.5);border:2px solid rgba(255,255,255,.25);
+             border-radius:8px;z-index:6;overflow:hidden;pointer-events:none;}
+  #healthfill{height:100%;width:100%;border-radius:5px;
+              background:linear-gradient(90deg,#ef4444,#f97316,#facc15,#19d36b);
+              transition:width .3s ease-out;}
+  #healthbar .hearts{position:absolute;inset:0;display:flex;align-items:center;
+                     justify-content:center;font-size:11px;font-weight:700;
+                     color:#fff;text-shadow:0 1px 2px #000;letter-spacing:1px;}
+#spell-popup{display:none !important;}
+#overlay{
+  position:fixed;inset:0;background:rgba(5,3,20,.92);
+  display:flex;flex-direction:column;justify-content:flex-start;align-items:center;
+  text-align:center;padding:20px 16px 32px;z-index:20;
+  overflow-y:auto;-webkit-overflow-scrolling:touch;
+}
+#overlay h1{font-size:clamp(22px,6vw,34px);margin:8px 0 6px;
+            background:linear-gradient(135deg,#c084fc,#f472b6,#38bdf8);
+            -webkit-background-clip:text;background-clip:text;color:transparent;}
+#overlay p{margin:4px 0;font-size:clamp(12px,3.4vw,15px);color:#c9c5e8;
+           max-width:480px;line-height:1.4;}
+#overlay .key{color:#facc15;font-weight:700;}
+#overlay button{margin-top:16px;padding:12px 28px;border-radius:40px;border:none;
+                background:linear-gradient(135deg,#7b3fe4,#e94fa1);color:#fff;
+                font-size:clamp(15px,4vw,17px);font-weight:700;
+                box-shadow:0 6px 24px rgba(233,79,161,.5);
+                cursor:pointer;touch-action:manipulation;flex-shrink:0;}
+#overlay button:disabled{opacity:.6;cursor:default;}
+.micro-note{font-size:clamp(11px,3vw,13px);color:#a9a4d4;margin-top:8px;
+            line-height:1.35;margin-bottom:8px;}
+
+</style>
+</head>
+<body>
+<canvas id="game"></canvas>
+
+<div id="ui">
+  <div id="hud">
+    <div class="badge">🏆 Очки: <span id="score">0</span></div>
+    <div class="badge">🪙 Монеты: <span id="coins">0</span></div>
+    <div class="badge">📍 Путь: <span id="dist">0</span> м</div>
+  </div>
+  <div id="status">
+    <div class="badge" id="ghost">👻 Бесплотный: —</div>
+    <div class="badge" id="magnet">🧲 Магнифико: —</div>
+    <div class="badge" id="levitate">🕊 Левитация: —</div>
+    <div class="badge" id="spell">✨ Заклинание: готово</div>
+  </div>
+</div>
+
+<div id="healthbar">
+  <div id="healthfill"></div>
+  <div class="hearts" id="healthtext">❤️ 5 / 5</div>
+</div>
+
+
+<button id="mic-btn">🎤 Включить микрофон</button>
+<div class="flash" id="flash"></div>
+<div id="timerewind"></div>
+<div id="confuse-flash"></div>
+<div id="spell-popup"></div>
+
+<div id="overlay">
+  <h1>Маг Бродилка</h1>
+  <p>Ты — бегущий маг-путешественник. Прыгай через препятствия, собирай монеты, исследуй бесконечный путь.</p>
+  <p>❤️ У тебя <span class="key">5 сердец</span>. При столкновении маг конфузится на 2 секунды и теряет 1 сердце. Игра заканчивается, когда сердца закончатся.</p>
+  <p>🎤 <span class="key">«Фокус Покус»</span> — бесплотность</p>
+  <p>🎤 <span class="key">«Абракадабра»</span> — уничтожает ближайшее препятствие./p>
+  <p>🎤 <span class="key">«Магнифико»</span> — магнитизм.</p>
+  <p>🎤 <span class="key">«Темпус»</span> — откат во времени на 7 секунд назад.</p>
+  <p>🎤 <span class="key">«Торнадо»</span> — ураган, уничтожающий до 3 препятствий впереди.</p>
+  <p>🎤 <span class="key">«Левитация»</span> — 10 секунд паришь в небе</p>
+
+  <p>🎤 <span class="key">«Контра Долорем»</span> — лечение</p>  
+<p>Управление: <span class="key">тап / пробел</span> — прыжок, <span class="key">двойной тап</span> — двойной прыжок.</p>
+  <button id="start-btn">Начать игру</button>
+  <p class="micro-note">При старте браузер попросит доступ к микрофону —<br>разреши для голосовых заклинаний</p>
+</div>
+
+<script>
+/* ================= КАНВАС ================= */
+const cvs = document.getElementById('game');
+const ctx = cvs.getContext('2d');
+let W, H, DPR;
+function resize(){
+  DPR = Math.min(window.devicePixelRatio || 1, 2);
+  W = window.innerWidth; H = window.innerHeight;
+  cvs.width = W * DPR; cvs.height = H * DPR;
+  cvs.style.width = W+'px'; cvs.style.height = H+'px';
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.imageSmoothingEnabled = false;
+}
+window.addEventListener('resize', resize); resize();
+
+/* ================= СОСТОЯНИЕ ================= */
+const G = {
+  running:false, over:false,
+  t:0, dt:0, speed:200, baseSpeed:200,
+  score:0, coins:0, distance:0,
+  obstacles:[], coinList:[], particles:[], stars:[],
+  spawnTimer:1.4, coinTimer:1.0,
+  ghostTime:0,
+healBeamTime:0   ,
+  magnetTime:0,
+  levitateTime:0,
+  levitateHeight:0,
+  levitateTarget:0,
+  shake:0, flashAlpha:0, flashColor:'#fff',
+  groundY:0,
+  history:[],
+  rewindActive:false,
+  tornadoes:[],
+  // Здоровье и конфуз
+  health:5,
+  maxHealth:5,
+  confuseTime:0,
+  invulnTime:0,   // короткая неуязвимость после удара
+  damageFlash:0
+};
+G.groundY = () => H * 0.78;
+
+/* ================= МАГ ================= */
+const mage = {
+  x: 0, y: 0,
+  vy: 0, onGround: true, jumps: 0,
+  runPhase: 0,
+  breath: 0,
+  robeSway: 0,
+  castPose: 0,
+  castType: '',
+  lean: 0,
+  levFloat: 0,
+  confuseWobble: 0  // покачивание головой при конфузе
+};
+
+const POSE = { hipY: -34, headY: -66, shoulderY: -58 };
+
+function updateMage(dt){
+  mage.runPhase += dt * (G.running ? 8 : 2);
+  mage.breath += dt * 2.2;
+  mage.robeSway = Math.sin(mage.runPhase*0.5)*0.06 + Math.sin(G.t*1.5)*0.015;
+  mage.lean = G.running ? Math.sin(mage.runPhase)*0.04 : 0;
+  mage.levFloat += dt * 2.5;
+  mage.confuseWobble += dt * 12;
+
+  if (mage.castPose > 0){
+    mage.castPose -= dt*1.6;
+    if (mage.castPose < 0) mage.castPose = 0;
+  }
+
+  // ЛЕВИТАЦИЯ
+  if (G.levitateTime > 0){
+    const target = G.levitateTarget + Math.sin(mage.levFloat) * 12;
+    const diff = target - mage.y;
+    mage.y += diff * Math.min(1, dt * 4);
+    mage.vy = 0;
+    mage.onGround = false;
+    mage.jumps = 0;
+    return;
+  }
+
+  if (!mage.onGround){
+    mage.vy += 2100*dt;
+    mage.y += mage.vy*dt;
+    if (mage.y >= 0){ mage.y = 0; mage.vy = 0; mage.onGround = true; mage.jumps = 0; }
+  }
+}
+
+function startCast(type){
+  mage.castPose = 1;
+  mage.castType = type;
+  G.flashAlpha = 0.6;
+  let flashCol = '#fbbf24';
+  if (type === 'ghost') flashCol = '#7dd3fc';
+  else if (type === 'magnet') flashCol = '#c084fc';
+  else if (type === 'tempus') flashCol = '#38bdf8';
+  else if (type === 'tornado') flashCol = '#a3e635';
+  else if (type === 'levitate') flashCol = '#fde68a';
+  G.flashColor = flashCol;
+
+  const hx = mage.x + 26;
+  const hy = G.groundY() + mage.y + POSE.shoulderY - 10;
+  let col = '#ffd76a';
+  if (type==='ghost') col = '#93e6ff';
+  else if (type==='magnet') col = '#d8b4fe';
+  else if (type === 'heal') flashCol = '#f9a8d4';
+  else if (type==='tempus') col = '#7dd3fc';
+  else if (type==='tornado') col = '#bef264';
+  else if (type==='levitate') col = '#fef3c7';
+
+  for (let i=0;i<30;i++){
+    G.particles.push({
+      x:hx, y:hy,
+      vx:(Math.random()*2-1)*280,
+      vy:(Math.random()*2-1)*280 - 40,
+      life:0.5+Math.random()*0.6, max:1.1,
+      color: col, size:2+Math.random()*3, grav:180
+    });
+  }
+}
+
+const spellPopup = document.getElementById('spell-popup');
+let popupTimer = null;
+function showSpellName(name, color){
+  spellPopup.textContent = name;
+  spellPopup.style.color = color;
+  spellPopup.style.textShadow = `0 0 20px ${color}, 0 4px 12px #000`;
+  spellPopup.classList.add('show');
+  clearTimeout(popupTimer);
+  popupTimer = setTimeout(()=>{ spellPopup.classList.remove('show'); }, 1200);
+}
+
+function jump(){
+  if (!G.running || G.over) return;
+  if (G.levitateTime > 0) return;
+  if (G.confuseTime > 0) return; // во время конфуза прыгать нельзя
+  if (mage.jumps < 2){
+    mage.vy = mage.jumps === 0 ? -760 : -680;
+    mage.onGround = false;
+    mage.jumps++;
+    for (let i=0;i<10;i++){
+      G.particles.push({
+        x:mage.x+(Math.random()*20-10), y:G.groundY()+mage.y,
+        vx:(Math.random()*2-1)*90, vy:-Math.random()*120,
+        life:0.4+Math.random()*0.3, max:0.7,
+        color:'#8b7fd4', size:2+Math.random()*2, grav:420
+      });
+    }
+  }
+}
+
+/* ================= КОНФУЗ ================= */
+function applyConfusion(){
+  if (G.invulnTime > 0) return;
+  G.health--;
+  G.confuseTime = 2;
+  G.invulnTime = 2.5; // неуязвимость чуть больше конфуза
+  G.damageFlash = 1;
+  G.shake = 1.0;
+
+  // Звёздочки вокруг головы
+  for (let i=0;i<24;i++){
+    const ang = (i / 24) * Math.PI * 2;
+    G.particles.push({
+      x: mage.x + Math.cos(ang)*30,
+      y: G.groundY() + mage.y + POSE.headY - 10 + Math.sin(ang)*15,
+      vx: Math.cos(ang)*120,
+      vy: Math.sin(ang)*120 - 40,
+      life: 0.8+Math.random()*0.5, max: 1.3,
+      color: Math.random()<0.5 ? '#facc15' : '#fbbf24',
+      size: 3+Math.random()*3, grav: 100
+    });
+  }
+
+  // Красный флеш
+  const cf = document.getElementById('confuse-flash');
+  cf.classList.remove('active');
+  void cf.offsetWidth;
+  cf.classList.add('active');
+  setTimeout(()=>cf.classList.remove('active'), 500);
+
+  // Вибрация
+  if (navigator.vibrate) navigator.vibrate([80, 40, 80]);
+
+  // Обновляем HUD здоровья
+  updateHealthUI();
+
+  // Если сердца закончились — конец игры
+  if (G.health <= 0){
+    setTimeout(()=>{ if (G.health <= 0) gameOver(); }, 800);
+  }
+}
+
+function updateHealthUI(){
+  const fill = document.getElementById('healthfill');
+  const text = document.getElementById('healthtext');
+  const pct = Math.max(0, G.health) / G.maxHealth * 100;
+  fill.style.width = pct + '%';
+  let hearts = '';
+  for (let i=0;i<G.maxHealth;i++){
+    hearts += i < G.health ? '❤️' : '🖤';
+  }
+  text.textContent = hearts;
+}
+
+/* ================= РИСОВАНИЕ МАГА ================= */
+function drawMage(){
+  const gy = G.groundY() + mage.y;
+  const x = mage.x;
+  const t = mage.runPhase;
+  const ghost = G.ghostTime > 0;
+  const magnet = G.magnetTime > 0;
+  const levitate = G.levitateTime > 0;
+  const confused = G.confuseTime > 0;
+
+  ctx.save();
+  ctx.translate(x, gy);
+
+  // При конфузе маг покачивается из стороны в сторону
+  const confuseTilt = confused ? Math.sin(mage.confuseWobble)*0.25 : 0;
+  ctx.rotate(mage.lean*0.5 + confuseTilt);
+
+  // Мигание при неуязвимости (после удара)
+  if (G.invulnTime > 0 && G.confuseTime <= 0){
+    ctx.globalAlpha = 0.5 + Math.sin(G.t*25)*0.5;
+  }
+
+  const run = G.running && mage.onGround && !levitate && !confused;
+  const swing = run ? Math.sin(t) : 0;
+  const swing2 = run ? Math.sin(t + Math.PI) : 0;
+  const bob = run ? Math.abs(Math.sin(t))*3 : (levitate ? 0 : Math.sin(mage.breath)*1.4);
+  const breathe = Math.sin(mage.breath) * 1.2;
+
+  const hipY = POSE.hipY - bob;
+  const shoulderY = POSE.shoulderY - bob + breathe*0.4;
+  const headY = POSE.headY - bob + breathe;
+
+  const cast = mage.castPose;
+  const armRaise = cast * 40;
+
+  const levSway = levitate ? Math.sin(mage.levFloat*0.8)*3 : 0;
+
+  // Ауры
+  if (ghost){
+    const pulse = 1 + Math.sin(G.t*8)*0.08;
+    ctx.save();
+    ctx.globalAlpha = 0.35 * (0.7 + Math.sin(G.t*10)*0.3);
+    const grd = ctx.createRadialGradient(0,-40,4, 0,-40,60*pulse);
+    grd.addColorStop(0,'rgba(125,211,252,.9)');
+    grd.addColorStop(1,'rgba(125,211,252,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(0,-40,60*pulse,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+    ctx.globalAlpha = 0.55;
+  }
+
+  if (magnet && !ghost){
+    const pulse = 1 + Math.sin(G.t*6)*0.12;
+    ctx.save();
+    ctx.globalAlpha = 0.3 * (0.6 + Math.sin(G.t*7)*0.4);
+    const grd = ctx.createRadialGradient(0,-40,6, 0,-40,90*pulse);
+    grd.addColorStop(0,'rgba(192,132,252,.9)');
+    grd.addColorStop(1,'rgba(192,132,252,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(0,-40,90*pulse,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  if (levitate){
+    const pulse = 1 + Math.sin(G.t*5)*0.1;
+    ctx.save();
+    ctx.globalAlpha = 0.4 * (0.7 + Math.sin(G.t*6)*0.3);
+    const grd = ctx.createRadialGradient(0,-30,8, 0,-30,110*pulse);
+    grd.addColorStop(0,'rgba(253,230,138,.9)');
+    grd.addColorStop(0.5,'rgba(251,191,36,.5)');
+    grd.addColorStop(1,'rgba(251,191,36,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(0,-30,110*pulse,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  if (G.rewindActive){
+    ctx.save();
+    ctx.globalAlpha = 0.4 * (0.6 + Math.sin(G.t*14)*0.4);
+    const grd = ctx.createRadialGradient(0,-40,10, 0,-40,110);
+    grd.addColorStop(0,'rgba(56,189,248,.9)');
+    grd.addColorStop(1,'rgba(56,189,248,0)');
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(0,-40,110,0,Math.PI*2); ctx.fill();
+    ctx.restore();
+  }
+
+  if (!ghost && !levitate){
+    ctx.save();
+    ctx.globalAlpha = 0.28;
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.ellipse(0, 2, 22, 5, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  if (levitate){
+    ctx.save();
+    const groundOffset = mage.y;
+    ctx.globalAlpha = Math.max(0.05, 0.3 - groundOffset*0.0006);
+    ctx.fillStyle = '#000';
+    ctx.beginPath();
+    ctx.ellipse(0, groundOffset + 2, 20, 5, 0, 0, Math.PI*2);
+    ctx.fill();
+    ctx.restore();
+  }
+
+  const skin = ghost ? '#bde9ff' : (confused ? '#ffb8b8' : '#f2c9a0');
+  const robeDark = ghost ? '#3d6b8f' : '#3b2a6b';
+  const robeMid  = ghost ? '#5a92b8' : '#5b3fa8';
+  const robeLight= ghost ? '#8ec7e8' : '#7c5fd6';
+  const hatDark  = ghost ? '#2c5570' : '#2a1d4f';
+
+  // При конфузе ноги подкашиваются, маг слегка «танцует»
+  const confuseLegSway = confused ? Math.sin(mage.confuseWobble*1.5)*8 : 0;
+
+  const legSwing = mage.onGround ? swing*16 : -8;
+  const legSwing2 = mage.onGround ? swing2*16 : 12;
+
+  const levLegSway = levitate ? Math.sin(mage.levFloat*1.2)*6 : 0;
+  const levLegSway2 = levitate ? Math.sin(mage.levFloat*1.2 + Math.PI)*6 : 0;
+
+  const legEndL = levitate ? hipY+24 + levLegSway : hipY+34;
+  const legEndLx = levitate ? -8 + levLegSway*0.5 : -4 + legSwing + confuseLegSway;
+  const legEndR = levitate ? hipY+24 + levLegSway2 : hipY+34;
+  const legEndRx = levitate ? 8 + levLegSway2*0.5 : 4 + legSwing2 - confuseLegSway;
+
+  ctx.strokeStyle = robeDark; ctx.lineWidth = 9; ctx.lineCap='round';
+  ctx.beginPath();
+  ctx.moveTo(-4, hipY);
+  if (levitate){
+    ctx.quadraticCurveTo(-4 - 6, hipY+12, legEndLx, legEndL);
+  } else {
+    ctx.lineTo(-4 + legSwing*0.5 + confuseLegSway*0.5, hipY+18);
+    ctx.lineTo(legEndLx, legEndL);
+  }
+  ctx.stroke();
+  ctx.fillStyle = '#1a1430';
+  ctx.beginPath();
+  ctx.ellipse(legEndLx, legEndL+1, 8, 4, 0, 0, Math.PI*2); ctx.fill();
+
+  ctx.strokeStyle = robeMid; ctx.lineWidth = 9;
+  ctx.beginPath();
+  ctx.moveTo(4, hipY);
+  if (levitate){
+    ctx.quadraticCurveTo(4 + 6, hipY+12, legEndRx, legEndR);
+  } else {
+    ctx.lineTo(4 + legSwing2*0.5 - confuseLegSway*0.5, hipY+18);
+    ctx.lineTo(legEndRx, legEndR);
+  }
+  ctx.stroke();
+  ctx.fillStyle = '#241b3f';
+  ctx.beginPath();
+  ctx.ellipse(legEndRx, legEndR+1, 8, 4, 0, 0, Math.PI*2); ctx.fill();
+
+  ctx.save();
+  ctx.translate(0, hipY);
+  const sway = mage.robeSway + (levitate ? Math.sin(G.t*4)*0.12 : 0) + (confused ? Math.sin(mage.confuseWobble)*0.15 : 0);
+  ctx.rotate(sway);
+  ctx.fillStyle = robeDark;
+  ctx.beginPath();
+  ctx.moveTo(-11, 2);
+  if (levitate){
+    ctx.quadraticCurveTo(-22, -18, -16, -34);
+    ctx.lineTo(16, -34);
+    ctx.quadraticCurveTo(22, -18, 11, 2);
+  } else {
+    ctx.quadraticCurveTo(-18, -20, -13, -34);
+    ctx.lineTo(13, -34);
+    ctx.quadraticCurveTo(18, -20, 11, 2);
+  }
+  ctx.closePath(); ctx.fill();
+
+  ctx.fillStyle = robeMid;
+  ctx.beginPath();
+  ctx.moveTo(-10, 2);
+  ctx.quadraticCurveTo(-14, -18, -11, -32);
+  ctx.lineTo(11, -32);
+  ctx.quadraticCurveTo(14, -18, 10, 2);
+  ctx.closePath(); ctx.fill();
+
+  ctx.fillStyle = robeLight;
+  ctx.beginPath();
+  ctx.moveTo(-4, 1);
+  ctx.quadraticCurveTo(-6, -16, -4, -30);
+  ctx.lineTo(4, -30);
+  ctx.quadraticCurveTo(6, -16, 4, 1);
+  ctx.closePath(); ctx.fill();
+
+  ctx.fillStyle = '#c9a227';
+  ctx.fillRect(-11, -12, 22, 4);
+  ctx.fillStyle = '#f0d060';
+  ctx.fillRect(-4, -13, 8, 6);
+  ctx.restore();
+
+  const armY = shoulderY + 4;
+  const laSwing = mage.onGround ? swing2*20 : (levitate ? -50 : -30);
+  const raSwing = mage.onGround ? swing*20 : (levitate ? 50 : 25);
+
+  // При конфузе руки хватаются за голову
+  const confuseHandOffset = confused ? -30 : 0;
+
+  ctx.strokeStyle = robeMid; ctx.lineWidth = 7;
+  ctx.beginPath();
+  ctx.moveTo(-10, armY);
+  if (levitate){
+    ctx.lineTo(-10 - 18, armY - 4 + levSway);
+    ctx.lineTo(-10 - 26, armY + 2 + levSway);
+  } else if (confused){
+    ctx.lineTo(-10 - 12, armY - 12);
+    ctx.lineTo(-8, headY - 4);
+  } else {
+    ctx.lineTo(-10 - 8, armY + 12 + laSwing*0.3);
+    ctx.lineTo(-10 - 6 + laSwing*0.4, armY + 24 + laSwing*0.5);
+  }
+  ctx.stroke();
+  const lHandX = levitate ? -10 - 26 : (confused ? -8 : -10 - 6 + laSwing*0.4);
+  const lHandY = levitate ? armY + 2 + levSway : (confused ? headY - 4 : armY + 25 + laSwing*0.5);
+  ctx.fillStyle = skin;
+  ctx.beginPath(); ctx.arc(lHandX, lHandY, 4.5, 0, Math.PI*2); ctx.fill();
+
+  ctx.strokeStyle = robeLight; ctx.lineWidth = 7;
+  ctx.beginPath();
+  ctx.moveTo(10, armY);
+  const handX = levitate ? 10 + 26 : (confused ? 8 : 10 + 6 + raSwing*0.4);
+  const handY = levitate ? armY + 2 - levSway : (confused ? headY - 4 : armY + 25 + raSwing*0.5 - armRaise);
+  if (levitate){
+    ctx.lineTo(10 + 18, armY - 4 - levSway);
+    ctx.lineTo(handX, handY);
+  } else if (confused){
+    ctx.lineTo(10 + 12, armY - 12);
+    ctx.lineTo(handX, handY);
+  } else {
+    ctx.lineTo(10 + 8, armY + 12 + raSwing*0.3 - armRaise*0.4);
+    ctx.lineTo(handX, handY);
+  }
+  ctx.stroke();
+  ctx.fillStyle = skin;
+  ctx.beginPath(); ctx.arc(handX, handY, 4.5, 0, Math.PI*2); ctx.fill();
+
+  if (cast > 0){
+    const glow = cast;
+    let col = '251,191,36';
+    if (mage.castType === 'ghost') col = '125,211,252';
+    else if (mage.castType === 'magnet') col = '216,180,254';
+    else if (mage.castType === 'tempus') col = '56,189,248';
+    else if (mage.castType === 'tornado') col = '190,242,100';
+    else if (mage.castType === 'levitate') col = '253,230,138';
+
+    const grd = ctx.createRadialGradient(handX, handY, 1, handX, handY, 30*glow);
+    grd.addColorStop(0,`rgba(${col},1)`);
+    grd.addColorStop(1,`rgba(${col},0)`);
+    ctx.fillStyle = grd;
+    ctx.beginPath(); ctx.arc(handX, handY, 30*glow, 0, Math.PI*2); ctx.fill();
+    ctx.fillStyle = '#fff';
+    ctx.beginPath(); ctx.arc(handX, handY, 4*glow, 0, Math.PI*2); ctx.fill();
+  }
+
+  ctx.strokeStyle = skin; ctx.lineWidth = 6;
+  ctx.beginPath(); ctx.moveTo(0, shoulderY+2); ctx.lineTo(0, headY+10); ctx.stroke();
+
+  ctx.fillStyle = skin;
+  ctx.beginPath();
+  ctx.ellipse(0, headY, 10, 11, 0, 0, Math.PI*2); ctx.fill();
+
+  ctx.fillStyle = ghost ? '#cfe9f7' : '#e8e8f0';
+  ctx.beginPath();
+  ctx.moveTo(-8, headY+4);
+  ctx.quadraticCurveTo(-6, headY+20, 0, headY+22);
+  ctx.quadraticCurveTo(6, headY+20, 8, headY+4);
+  ctx.quadraticCurveTo(0, headY+10, -8, headY+4);
+  ctx.closePath(); ctx.fill();
+
+  // Глаза
+  const blink = (Math.sin(G.t*3.1) > 0.97) ? 0.15 : 1;
+  if (confused){
+    // Крестики-глазки при конфузе
+    ctx.strokeStyle = '#1a1430';
+    ctx.lineWidth = 1.8;
+    const ex = 4, ey = headY-2, es = 3;
+    // Левый глаз — X
+    ctx.beginPath();
+    ctx.moveTo(-ex-es, ey-es); ctx.lineTo(-ex+es, ey+es);
+    ctx.moveTo(-ex+es, ey-es); ctx.lineTo(-ex-es, ey+es);
+    ctx.stroke();
+    // Правый глаз — X
+    ctx.beginPath();
+    ctx.moveTo(ex-es, ey-es); ctx.lineTo(ex+es, ey+es);
+    ctx.moveTo(ex+es, ey-es); ctx.lineTo(ex-es, ey+es);
+    ctx.stroke();
+  } else {
+    ctx.fillStyle = ghost ? '#e0f6ff' : '#1a1430';
+    ctx.beginPath(); ctx.ellipse(-4, headY-2, 1.8, 2.4*blink, 0, 0, Math.PI*2); ctx.fill();
+    ctx.beginPath(); ctx.ellipse(4, headY-2, 1.8, 2.4*blink, 0, 0, Math.PI*2); ctx.fill();
+    if (!ghost){
+      ctx.fillStyle = levitate ? '#fde68a' : (magnet ? '#d8b4fe' : (G.rewindActive ? '#7dd3fc' : '#7dd3fc'));
+      ctx.beginPath(); ctx.arc(-4, headY-2.5, 0.7*blink, 0, Math.PI*2); ctx.fill();
+      ctx.beginPath(); ctx.arc(4, headY-2.5, 0.7*blink, 0, Math.PI*2); ctx.fill();
+    }
+  }
+
+  // Шляпа
+  ctx.fillStyle = hatDark;
+  ctx.beginPath();
+  ctx.ellipse(0, headY-8, 20, 5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.beginPath();
+  ctx.moveTo(-11, headY-8);
+  ctx.quadraticCurveTo(-6, headY-30, 2, headY-40);
+  ctx.quadraticCurveTo(6, headY-30, 11, headY-8);
+  ctx.closePath(); ctx.fill();
+  ctx.fillStyle = '#c9a227';
+  ctx.beginPath();
+  ctx.ellipse(0, headY-9, 11.5, 3.5, 0, 0, Math.PI*2); ctx.fill();
+  ctx.fillStyle = ghost ? '#bde9ff' : (levitate ? '#fef3c7' : (magnet ? '#e9d5ff' : (G.rewindActive ? '#7dd3fc' : '#facc15')));
+  drawStar(0, headY-13, 3, 5);
+
+  if (ghost){
+    ctx.globalAlpha = 0.6 + Math.sin(G.t*10)*0.2;
+    ctx.strokeStyle = 'rgba(180,240,255,.9)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath(); ctx.ellipse(0, hipY-10, 16, 30, 0, 0, Math.PI*2); ctx.stroke();
+  }
+
+  ctx.restore();
+
+  // Конфуз: звёздочки и круги над головой
+  if (confused){
+    const headWorldY = gy + POSE.headY - 20;
+    const cx = x;
+    const cy = headWorldY - 8;
+    ctx.save();
+    for (let i=0;i<3;i++){
+      const ang = mage.confuseWobble + i * (Math.PI*2/3);
+      const rx = Math.cos(ang) * 22;
+      const ry = Math.sin(ang) * 7;
+      const starX = cx + rx;
+      const starY = cy + ry;
+      ctx.fillStyle = '#facc15';
+      ctx.globalAlpha = 0.7 + Math.sin(mage.confuseWobble*2 + i)*0.3;
+      drawStar(starX, starY, 5, 5);
+    }
+    ctx.restore();
+
+    // Круговые линии
+    ctx.save();
+    ctx.strokeStyle = 'rgba(250,204,21,.35)';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.ellipse(cx, cy, 26, 9, 0, 0, Math.PI*2);
+    ctx.stroke();
+    ctx.restore();
+  }
+
+  if (levitate){
+    const wingY = gy - 55;
+    ctx.save();
+    ctx.globalAlpha = 0.5 + Math.sin(G.t*6)*0.2;
+    ctx.strokeStyle = '#fde68a';
+    ctx.lineWidth = 2;
+    for (let i=0;i<6;i++){
+      const ang = -Math.PI/2 + (i-2.5)*0.28;
+      const len = 28 + Math.sin(G.t*4 + i)*4;
+      ctx.beginPath();
+      ctx.moveTo(x, wingY);
+      ctx.lineTo(x + Math.cos(ang)*len, wingY + Math.sin(ang)*len);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
+function drawStar(cx, cy, r, points){
+  ctx.beginPath();
+  for (let i=0;i<points*2;i++){
+    const ang = (i*Math.PI)/points - Math.PI/2;
+    const rad = i%2===0 ? r : r*0.45;
+    const px = cx + Math.cos(ang)*rad;
+    const py = cy + Math.sin(ang)*rad;
+    i===0 ? ctx.moveTo(px,py) : ctx.lineTo(px,py);
+  }
+  ctx.closePath(); ctx.fill();
+}
+
+/* ================= ТОРНАДО ================= */
+function spawnTornado(x, targetX){
+  G.tornadoes.push({
+    x: x, y: G.groundY(),
+    targetX: targetX,
+    life: 2.5, max: 2.5,
+    phase: Math.random()*6,
+    speed: 260,
+    destroyed: 0
+  });
+}
+
+function drawTornado(td){
+  const gy = G.groundY();
+  const alpha = Math.min(1, td.life / 0.5);
+  ctx.save();
+  ctx.globalAlpha = alpha;
+
+  const height = 140;
+  const width = 60;
+  const wob = Math.sin(G.t*12 + td.phase)*6;
+
+  for (let layer=0; layer<5; layer++){
+    const lh = height * (1 - layer*0.15);
+    const lw = width * (1 - layer*0.12);
+    const off = Math.sin(G.t*10 + td.phase + layer)*8;
+    ctx.globalAlpha = alpha * (0.15 + layer*0.12);
+    ctx.fillStyle = layer%2 ? '#bef264' : '#a3e635';
+    ctx.beginPath();
+    ctx.ellipse(td.x + off, gy - lh/2, lw*0.5, lh*0.5, 0, 0, Math.PI*2);
+    ctx.fill();
+  }
+
+  ctx.globalAlpha = alpha;
+  const cg = ctx.createLinearGradient(0, gy-height, 0, gy);
+  cg.addColorStop(0,'rgba(190,242,100,.2)');
+  cg.addColorStop(0.5,'rgba(163,230,53,.55)');
+  cg.addColorStop(1,'rgba(101,163,13,.85)');
+  ctx.fillStyle = cg;
+  ctx.beginPath();
+  ctx.moveTo(td.x - width*0.4, gy);
+  ctx.lineTo(td.x - width*0.15 + wob, gy - height*0.5);
+  ctx.lineTo(td.x - width*0.1, gy - height);
+  ctx.lineTo(td.x + width*0.1, gy - height);
+  ctx.lineTo(td.x + width*0.15 - wob, gy - height*0.5);
+  ctx.lineTo(td.x + width*0.4, gy);
+  ctx.closePath();
+  ctx.fill();
+
+  ctx.globalAlpha = alpha * 0.8;
+  ctx.strokeStyle = '#ecfccb';
+  ctx.lineWidth = 2;
+  for (let i=0;i<5;i++){
+    const y = gy - (i+1) * (height/6);
+    const w = width * (1 - i*0.13);
+    const off = Math.sin(G.t*14 + td.phase + i*1.3) * 8;
+    ctx.beginPath();
+    ctx.moveTo(td.x - w*0.5 + off, y);
+    ctx.quadraticCurveTo(td.x, y - 6, td.x + w*0.5 + off, y);
+    ctx.stroke();
+  }
+
+  ctx.globalAlpha = alpha * 0.5;
+  const dg = ctx.createRadialGradient(td.x, gy, 2, td.x, gy, 55);
+  dg.addColorStop(0,'rgba(190,242,100,.7)');
+  dg.addColorStop(1,'rgba(190,242,100,0)');
+  ctx.fillStyle = dg;
+  ctx.beginPath(); ctx.ellipse(td.x, gy, 55, 14, 0, 0, Math.PI*2); ctx.fill();
+
+  ctx.restore();
+}
+
+function updateTornadoes(dt){
+  for (let i=G.tornadoes.length-1;i>=0;i--){
+    const td = G.tornadoes[i];
+    td.life -= dt;
+    td.phase += dt*3;
+    td.x += td.speed * dt;
+
+    for (let j=G.obstacles.length-1;j>=0;j--){
+      const o = G.obstacles[j];
+      const dx = o.x - td.x;
+      if (Math.abs(dx) < 45 && o.y === td.y && td.destroyed < 3){
+        td.destroyed++;
+        for (let k=0;k<30;k++){
+          G.particles.push({
+            x:o.x, y:o.y - o.h/2,
+            vx:(Math.random()*2-1)*380,
+            vy:(Math.random()*2-1)*380 - 60,
+            life:0.5+Math.random()*0.6, max:1.1,
+            color: Math.random()<0.5 ? '#bef264' : '#65a30d',
+            size:2+Math.random()*4, grav:300
+          });
+        }
+        G.obstacles.splice(j,1);
+        G.shake = 0.5;
+      }
+    }
+
+    if (Math.random() < 0.5){
+      G.particles.push({
+        x: td.x + (Math.random()*40-20),
+        y: G.groundY() - Math.random()*120,
+        vx: 60 + Math.random()*120,
+        vy: -Math.random()*80,
+        life: 0.4 + Math.random()*0.4, max: 0.8,
+        color: Math.random()<0.5 ? '#d9f99d' : '#a3e635',
+        size: 2+Math.random()*2, grav: -50
+      });
+    }
+
+    if (td.life <= 0 || td.x > W + 200){
+      G.tornadoes.splice(i,1);
+    }
+  }
+}
+
+/* ================= ПРЕПЯТСТВИЯ / МОНЕТЫ ================= */
+function spawnObstacle(){
+  const gy = G.groundY();
+  const types = ['rock','spike','crystal','pillar'];
+  const type = types[Math.floor(Math.random()*types.length)];
+  let o;
+  const baseX = W + 60;
+  if (type==='rock') o = {x:baseX, y:gy, w:44, h:38, type, hp:1, wobble:Math.random()*6, passed:false};
+  else if (type==='spike') o = {x:baseX, y:gy, w:34, h:52, type, hp:1, passed:false};
+  else if (type==='crystal') o = {x:baseX, y:gy, w:38, h:64, type, hp:1, hue:Math.random()*60+260, passed:false};
+  else o = {x:baseX, y:gy, w:30, h:80, type, hp:1, passed:false};
+  G.obstacles.push(o);
+}
+
+function spawnCoin(){
+  const gy = G.groundY();
+  const heights = [gy-30, gy-70, gy-110, gy-220, gy-280];
+  G.coinList.push({
+    x: W+40,
+    y: heights[Math.floor(Math.random()*heights.length)],
+    r: 11, phase: Math.random()*6
+  });
+}
+
+/* ================= ФОН / ЗЕМЛЯ ================= */
+function drawBackground(){
+  const sky = ctx.createLinearGradient(0,0,0,H);
+  if (G.rewindActive){
+    sky.addColorStop(0,'#0a2540'); sky.addColorStop(0.55,'#0e3a5c'); sky.addColorStop(1,'#0a1a2e');
+  } else if (G.confuseTime > 0){
+    sky.addColorStop(0,'#3a0f1a'); sky.addColorStop(0.55,'#4a1020'); sky.addColorStop(1,'#1a0510');
+  } else if (G.levitateTime>0){
+    sky.addColorStop(0,'#1a1040'); sky.addColorStop(0.4,'#3d2a6b'); sky.addColorStop(0.75,'#c9a227'); sky.addColorStop(1,'#fbbf24');
+  } else if (G.ghostTime>0){
+    sky.addColorStop(0,'#0f2a4a'); sky.addColorStop(0.6,'#123a5c'); sky.addColorStop(1,'#0a1a2e');
+  } else if (G.magnetTime>0){
+    sky.addColorStop(0,'#2a1040'); sky.addColorStop(0.55,'#3d1a5c'); sky.addColorStop(1,'#0b0a1a');
+  } else if (G.tornadoes.length > 0){
+    sky.addColorStop(0,'#1a2a10'); sky.addColorStop(0.55,'#2a3a15'); sky.addColorStop(1,'#0b0a1a');
+  } else {
+    sky.addColorStop(0,'#1a0f3a'); sky.addColorStop(0.55,'#2a1a55'); sky.addColorStop(1,'#0b0a1a');
+  }
+  ctx.fillStyle = sky;
+  ctx.fillRect(0,0,W,H);
+
+  ctx.save();
+  ctx.globalAlpha = 0.9;
+  const mx = W*0.78, my = G.levitateTime>0 ? H*0.35 : H*0.16, mr = 34;
+  const mg = ctx.createRadialGradient(mx,my,4,mx,my,mr*2.4);
+  mg.addColorStop(0,'rgba(255,240,200,.9)');
+  mg.addColorStop(0.25,'rgba(255,230,170,.35)');
+  mg.addColorStop(1,'rgba(255,230,170,0)');
+  ctx.fillStyle = mg;
+  ctx.beginPath(); ctx.arc(mx,my,mr*2.4,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#fdf3d0';
+  ctx.beginPath(); ctx.arc(mx,my,mr,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = 'rgba(200,190,150,.35)';
+  ctx.beginPath(); ctx.arc(mx-8,my-6,6,0,Math.PI*2); ctx.fill();
+  ctx.beginPath(); ctx.arc(mx+9,my+7,4,0,Math.PI*2); ctx.fill();
+  ctx.restore();
+
+  for (const s of G.stars){
+    ctx.globalAlpha = s.a * (0.6 + Math.sin(G.t*s.tw + s.ph)*0.4);
+    ctx.fillStyle = '#fff';
+    ctx.fillRect(s.x, s.y, s.s, s.s);
+  }
+  ctx.globalAlpha = 1;
+
+  const gy = G.groundY();
+  ctx.fillStyle = 'rgba(30,20,60,.85)';
+  ctx.beginPath();
+  ctx.moveTo(0, gy);
+  for (let x=0; x<=W; x+=40){
+    const y = gy - 90 - Math.sin(x*0.008 + 1)*40 - Math.sin(x*0.02)*20;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(W, gy); ctx.closePath(); ctx.fill();
+
+  ctx.fillStyle = 'rgba(22,14,45,.95)';
+  ctx.beginPath();
+  ctx.moveTo(0, gy);
+  for (let x=0; x<=W; x+=30){
+    const y = gy - 45 - Math.sin(x*0.012 + 3)*25;
+    ctx.lineTo(x, y);
+  }
+  ctx.lineTo(W, gy); ctx.closePath(); ctx.fill();
+
+  if (G.levitateTime > 0){
+    ctx.save();
+    ctx.globalAlpha = 0.25;
+    for (let i=0;i<3;i++){
+      const cy = H*0.55 + i*40;
+      const off = (G.t * (20 + i*10)) % (W + 300);
+      ctx.fillStyle = '#fff';
+      ctx.beginPath();
+      ctx.ellipse(W - off, cy, 90, 12, 0, 0, Math.PI*2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.ellipse(W - off - 50, cy + 4, 60, 8, 0, 0, Math.PI*2);
+      ctx.fill();
+    }
+    ctx.restore();
+  }
+}
+
+function drawGround(){
+  const gy = G.groundY();
+  const gr = ctx.createLinearGradient(0,gy,0,H);
+  gr.addColorStop(0,'#2a1d4f'); gr.addColorStop(0.3,'#1a1235'); gr.addColorStop(1,'#0b0a1a');
+  ctx.fillStyle = gr;
+  ctx.fillRect(0,gy,W,H-gy);
+
+  let edgeCol = 'rgba(124,95,214,.9)';
+  if (G.rewindActive) edgeCol = 'rgba(56,189,248,.9)';
+  else if (G.confuseTime > 0) edgeCol = 'rgba(239,68,68,.9)';
+  else if (G.levitateTime>0) edgeCol = 'rgba(253,230,138,.9)';
+  else if (G.ghostTime>0) edgeCol = 'rgba(125,211,252,.8)';
+  else if (G.magnetTime>0) edgeCol = 'rgba(192,132,252,.9)';
+  else if (G.tornadoes.length>0) edgeCol = 'rgba(190,242,100,.9)';
+
+  ctx.strokeStyle = edgeCol;
+  ctx.lineWidth = 3;
+  ctx.beginPath(); ctx.moveTo(0,gy); ctx.lineTo(W,gy); ctx.stroke();
+  ctx.strokeStyle = 'rgba(255,255,255,.07)';
+  ctx.lineWidth = 2;
+  const off = (G.distance*0.6) % 60;
+  for (let x=-off; x<W; x+=60){
+    ctx.beginPath(); ctx.moveTo(x, gy+16); ctx.lineTo(x+22, gy+16); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(x+30, gy+34); ctx.lineTo(x+48, gy+34); ctx.stroke();
+  }
+}
+
+function drawObstacle(o){
+  ctx.save();
+  ctx.translate(o.x, o.y);
+  ctx.globalAlpha = 0.3; ctx.fillStyle = '#000';
+  ctx.beginPath(); ctx.ellipse(0, 2, o.w*0.55, 5, 0,0,Math.PI*2); ctx.fill();
+  ctx.globalAlpha = 1;
+
+  if (o.type==='rock'){
+    const wob = Math.sin(G.t*3+o.wobble)*1.2;
+    ctx.fillStyle = '#4a3d6b';
+    ctx.beginPath();
+    ctx.moveTo(-o.w/2, 0);
+    ctx.lineTo(-o.w/2+4, -o.h*0.7+wob);
+    ctx.lineTo(-6, -o.h+wob*0.5);
+    ctx.lineTo(8, -o.h*0.85);
+    ctx.lineTo(o.w/2-2, -o.h*0.4);
+    ctx.lineTo(o.w/2, 0);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#5f4f88';
+    ctx.beginPath();
+    ctx.moveTo(-o.w/2+4, -o.h*0.7+wob);
+    ctx.lineTo(-6, -o.h+wob*0.5);
+    ctx.lineTo(0, -o.h*0.6);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#7c6aa8';
+    ctx.beginPath();
+    ctx.arc(-4, -o.h*0.6, 2.5, 0, Math.PI*2); ctx.fill();
+  }
+  else if (o.type==='spike'){
+    ctx.fillStyle = '#c0c8d8';
+    ctx.beginPath();
+    ctx.moveTo(-o.w/2, 0); ctx.lineTo(0, -o.h); ctx.lineTo(o.w/2, 0);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#8a94a8';
+    ctx.beginPath();
+    ctx.moveTo(0, -o.h); ctx.lineTo(o.w/2, 0); ctx.lineTo(0, 0);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#e8eef8';
+    ctx.beginPath();
+    ctx.moveTo(-4, -o.h*0.3); ctx.lineTo(0, -o.h*0.85); ctx.lineTo(2, -o.h*0.3);
+    ctx.closePath(); ctx.fill();
+  }
+  else if (o.type==='crystal'){
+    const hue = o.hue;
+    ctx.fillStyle = `hsl(${hue},70%,55%)`;
+    ctx.beginPath();
+    ctx.moveTo(-o.w/2, 0);
+    ctx.lineTo(-o.w*0.3, -o.h*0.75);
+    ctx.lineTo(0, -o.h);
+    ctx.lineTo(o.w*0.3, -o.h*0.7);
+    ctx.lineTo(o.w/2, 0);
+    ctx.closePath(); ctx.fill();
+    ctx.fillStyle = `hsl(${hue},80%,72%)`;
+    ctx.beginPath();
+    ctx.moveTo(-o.w*0.3, -o.h*0.75);
+    ctx.lineTo(0, -o.h);
+    ctx.lineTo(0, 0);
+    ctx.lineTo(-o.w/2, 0);
+    ctx.closePath(); ctx.fill();
+    ctx.globalAlpha = 0.35 + Math.sin(G.t*4)*0.15;
+    const cg = ctx.createRadialGradient(0,-o.h*0.6,2,0,-o.h*0.6,o.h*0.8);
+    cg.addColorStop(0,`hsla(${hue},90%,75%,.7)`);
+    cg.addColorStop(1,`hsla(${hue},90%,75%,0)`);
+    ctx.fillStyle = cg;
+    ctx.beginPath(); ctx.arc(0,-o.h*0.6,o.h*0.8,0,Math.PI*2); ctx.fill();
+    ctx.globalAlpha = 1;
+  }
+  else {
+    ctx.fillStyle = '#3a2d5e';
+    ctx.fillRect(-o.w/2, -o.h, o.w, o.h);
+    ctx.fillStyle = '#4f3f7a';
+    ctx.fillRect(-o.w/2, -o.h, o.w*0.5, o.h);
+    ctx.fillStyle = '#7c5fd6';
+    ctx.fillRect(-o.w/2-2, -o.h-3, o.w+4, 6);
+    ctx.fillStyle = '#facc15';
+    ctx.beginPath(); ctx.arc(0, -o.h+10, 3+Math.sin(G.t*5)*0.8, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.restore();
+}
+
+function drawCoin(c){
+  const y = c.y + Math.sin(G.t*3 + c.phase)*4;
+  ctx.save();
+  ctx.translate(c.x, y);
+  const s = Math.abs(Math.cos(G.t*3 + c.phase));
+  ctx.scale(0.4 + s*0.6, 1);
+  const cg = ctx.createRadialGradient(0,0,1,0,0,c.r);
+  cg.addColorStop(0,'#fff3b0'); cg.addColorStop(0.6,'#facc15'); cg.addColorStop(1,'#c9920a');
+  ctx.fillStyle = cg;
+  ctx.beginPath(); ctx.arc(0,0,c.r,0,Math.PI*2); ctx.fill();
+  ctx.fillStyle = '#a3730a';
+  ctx.font = 'bold 12px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle';
+  ctx.fillText('★', 0, 1);
+  ctx.restore();
+  ctx.globalAlpha = 0.5;
+  ctx.fillStyle = '#fff';
+  ctx.beginPath(); ctx.arc(c.x-3, y-3, 2, 0, Math.PI*2); ctx.fill();
+  ctx.globalAlpha = 1;
+}
+
+function drawParticles(){
+  for (const p of G.particles){
+    const a = Math.max(0, p.life / p.max);
+    ctx.globalAlpha = a;
+    ctx.fillStyle = p.color;
+    ctx.beginPath(); ctx.arc(p.x, p.y, p.size*a, 0, Math.PI*2); ctx.fill();
+  }
+  ctx.globalAlpha = 1;
+}
+const HEAL_BEAM_DURATION = 1.6;
+/* ================= ИСТОРИЯ ДЛЯ ТЕМПУС ================= */
+const HISTORY_SECONDS = 12;
+function saveHistorySnapshot(){
+  G.history.push({
+    t: G.t,
+    distance: G.distance,
+    score: G.score,
+    coins: G.coins,
+    speed: G.speed,
+    spawnTimer: G.spawnTimer,
+    coinTimer: G.coinTimer,
+    ghostTime: G.ghostTime,
+    magnetTime: G.magnetTime,
+    levitateTime: G.levitateTime,
+    health: G.health,
+    confuseTime: G.confuseTime,
+    invulnTime: G.invulnTime,
+    mageY: mage.y,
+    mageVy: mage.vy,
+    mageOnGround: mage.onGround,
+    mageJumps: mage.jumps,
+    mageRunPhase: mage.runPhase,
+    obstacles: G.obstacles.map(o => ({...o})),
+    coinList: G.coinList.map(c => ({...c})),
+    tornadoes: G.tornadoes.map(td => ({...td}))
+  });
+  const maxFrames = Math.ceil(HISTORY_SECONDS / 0.016) + 5;
+  while (G.history.length > maxFrames) G.history.shift();
+}
+
+function rewindTime(seconds){
+  if (G.history.length < 2) return;
+  G.rewindActive = true;
+  const targetTime = G.t - seconds;
+
+  let best = G.history[0];
+  for (const h of G.history){
+    if (h.t <= targetTime){
+      if (h.t > best.t) best = h;
+    }
+  }
+  if (G.history[0].t > targetTime) best = G.history[0];
+
+  G.distance = best.distance;
+  G.score = best.score;
+  G.coins = best.coins;
+  G.speed = best.speed;
+  G.spawnTimer = best.spawnTimer;
+  G.coinTimer = best.coinTimer;
+  G.ghostTime = best.ghostTime;
+  G.magnetTime = best.magnetTime;
+  G.levitateTime = best.levitateTime;
+  G.health = best.health;
+  G.confuseTime = best.confuseTime;
+  G.invulnTime = best.invulnTime;
+  G.obstacles = best.obstacles.map(o => ({...o}));
+  G.coinList = best.coinList.map(c => ({...c}));
+  G.tornadoes = best.tornadoes.map(td => ({...td}));
+  mage.y = best.mageY;
+  mage.vy = best.mageVy;
+  mage.onGround = best.mageOnGround;
+  mage.jumps = best.mageJumps;
+  mage.runPhase = best.mageRunPhase;
+
+  G.history = G.history.filter(h => h.t <= best.t);
+
+  document.getElementById('score').textContent = G.score;
+  document.getElementById('coins').textContent = G.coins;
+  document.getElementById('dist').textContent = Math.floor(G.distance/10);
+  if (G.ghostTime > 0) document.getElementById('ghost').textContent = '👻 Бесплотный: ' + G.ghostTime.toFixed(1) + 'с';
+  else document.getElementById('ghost').textContent = '👻 Бесплотный: —';
+  if (G.magnetTime > 0) document.getElementById('magnet').textContent = '🧲 Магнифико: ' + G.magnetTime.toFixed(1) + 'с';
+  else document.getElementById('magnet').textContent = '🧲 Магнифико: —';
+  if (G.levitateTime > 0) document.getElementById('levitate').textContent = '🕊 Левитация: ' + G.levitateTime.toFixed(1) + 'с';
+  else document.getElementById('levitate').textContent = '🕊 Левитация: —';
+  updateHealthUI();
+
+  const rw = document.getElementById('timerewind');
+  rw.classList.remove('active');
+  void rw.offsetWidth;
+  rw.classList.add('active');
+  setTimeout(()=>rw.classList.remove('active'), 600);
+
+  for (let i=0;i<60;i++){
+    G.particles.push({
+      x: mage.x + (Math.random()*140-70),
+      y: G.groundY() + mage.y - Math.random()*140,
+      vx: -150 - Math.random()*250,
+      vy: (Math.random()*2-1)*120,
+      life: 0.6 + Math.random()*0.5, max: 1.1,
+      color: Math.random()<0.5 ? '#7dd3fc' : '#38bdf8',
+      size: 2+Math.random()*3, grav: -30
+    });
+  }
+
+  G.shake = 0.7;
+  setTimeout(()=>{ G.rewindActive = false; }, 900);
+}
+
+
+function drawHealBeam(){
+  if (G.healBeamTime <= 0) return;
+
+  // progress: 0 → 1 (появление/исчезновение)
+  const total = HEAL_BEAM_DURATION;
+  const t = 1 - (G.healBeamTime / total);      // 0..1 от начала
+  // Плавное появление и затухание
+  const fadeIn  = Math.min(1, t / 0.15);
+  const fadeOut = Math.min(1, (1 - t) / 0.25);
+  const strength = Math.min(fadeIn, fadeOut);
+
+  // Лёгкое мерцание
+  const flicker = 0.85 + Math.sin(G.t * 22) * 0.08 + Math.sin(G.t * 37) * 0.05;
+  const alpha = strength * flicker;
+
+  const mageX = mage.x;
+  const mageTopY = G.groundY() + mage.y + POSE.headY - 20; // над шляпой
+  const beamTopY = -40;                                    // выше верхнего края экрана
+
+  // Ширина луча: расширяется к низу
+  const topW = 28;
+  const bottomW = 90;
+
+  ctx.save();
+  ctx.globalCompositeOperation = 'lighter';
+
+  // Основной конус света
+  const beamGrad = ctx.createLinearGradient(0, beamTopY, 0, mageTopY);
+  beamGrad.addColorStop(0,   `rgba(255, 245, 180, 0)`);
+  beamGrad.addColorStop(0.25,`rgba(255, 235, 140, ${0.35 * alpha})`);
+  beamGrad.addColorStop(0.7, `rgba(255, 215, 90,  ${0.55 * alpha})`);
+  beamGrad.addColorStop(1,   `rgba(255, 200, 60,  ${0.15 * alpha})`);
+
+  ctx.fillStyle = beamGrad;
+  ctx.beginPath();
+  ctx.moveTo(mageX - topW/2, beamTopY);
+  ctx.lineTo(mageX + topW/2, beamTopY);
+  ctx.lineTo(mageX + bottomW/2, mageTopY);
+  ctx.lineTo(mageX - bottomW/2, mageTopY);
+  ctx.closePath();
+  ctx.fill();
+
+  // Яркое ядро луча
+  const coreW = 14;
+  const coreGrad = ctx.createLinearGradient(0, beamTopY, 0, mageTopY);
+  coreGrad.addColorStop(0,   `rgba(255, 255, 230, 0)`);
+  coreGrad.addColorStop(0.4, `rgba(255, 250, 210, ${0.5 * alpha})`);
+  coreGrad.addColorStop(1,   `rgba(255, 240, 180, ${0.9 * alpha})`);
+  ctx.fillStyle = coreGrad;
+  ctx.beginPath();
+  ctx.moveTo(mageX - coreW/2, beamTopY);
+  ctx.lineTo(mageX + coreW/2, beamTopY);
+  ctx.lineTo(mageX + coreW/2, mageTopY);
+  ctx.lineTo(mageX - coreW/2, mageTopY);
+  ctx.closePath();
+  ctx.fill();
+
+  // Мягкое свечение в точке попадания
+  const glowR = 70 * strength;
+  const glow = ctx.createRadialGradient(
+    mageX, mageTopY, 4,
+    mageX, mageTopY, glowR
+  );
+  glow.addColorStop(0, `rgba(255, 250, 200, ${0.85 * alpha})`);
+  glow.addColorStop(0.4, `rgba(255, 220, 120, ${0.4 * alpha})`);
+  glow.addColorStop(1, `rgba(255, 200, 60, 0)`);
+  ctx.fillStyle = glow;
+  ctx.beginPath();
+  ctx.arc(mageX, mageTopY, glowR, 0, Math.PI * 2);
+  ctx.fill();
+
+  // Тонкие «лучики» вокруг
+  ctx.globalAlpha = 0.5 * alpha;
+  ctx.strokeStyle = 'rgba(255, 240, 180, 0.9)';
+  ctx.lineWidth = 1.5;
+  for (let i = 0; i < 6; i++){
+    const ang = (i / 6) * Math.PI * 2 + G.t * 1.5;
+    const r1 = glowR * 0.4;
+    const r2 = glowR * (0.9 + Math.sin(G.t * 6 + i) * 0.1);
+    ctx.beginPath();
+    ctx.moveTo(mageX + Math.cos(ang) * r1, mageTopY + Math.sin(ang) * r1);
+    ctx.lineTo(mageX + Math.cos(ang) * r2, mageTopY + Math.sin(ang) * r2);
+    ctx.stroke();
+  }
+
+  ctx.restore();
+
+  // Дополнительно: вертикальная вспышка во весь экран
+  if (strength > 0.6){
+    const fl = (strength - 0.6) / 0.4;
+    ctx.save();
+    ctx.globalAlpha = 0.15 * fl;
+    const vg = ctx.createLinearGradient(0, 0, 0, H);
+    vg.addColorStop(0,   'rgba(255, 240, 180, 0.9)');
+    vg.addColorStop(0.5, 'rgba(255, 220, 120, 0.25)');
+    vg.addColorStop(1,   'rgba(255, 200, 60, 0)');
+    ctx.fillStyle = vg;
+    ctx.fillRect(0, 0, W, H);
+    ctx.restore();
+  }
+}
+
+/* ================= ОБНОВЛЕНИЕ ================= */
+function updateWorld(dt){
+  // Конфуз: игра замедляется и маг не может управляться
+  if (G.confuseTime > 0){
+    G.confuseTime -= dt;
+    if (G.confuseTime <= 0){
+      G.confuseTime = 0;
+    }
+  }
+  if (G.invulnTime > 0){
+    G.invulnTime -= dt;
+    if (G.invulnTime < 0) G.invulnTime = 0;
+  }
+
+
+  if (G.healBeamTime > 0){
+    G.healBeamTime -= dt;
+    if (G.healBeamTime < 0) G.healBeamTime = 0;
+  }
+
+
+  // Замедление во время конфуза
+  const slowFactor = G.confuseTime > 0 ? 0.35 : 1;
+  G.speed = (G.baseSpeed + Math.min(G.distance*0.015, 160)) * slowFactor;
+
+  G.distance += G.speed*dt;
+  G.score = Math.floor(G.distance/10) + G.coins*10;
+
+  if (!G.rewindActive){
+    saveHistorySnapshot();
+  }
+if (G.levitateTime > 0){
+  G.levitateTime -= dt;
+  if (G.levitateTime <= 0){
+    G.levitateTime = 0;
+    document.getElementById('levitate').textContent = '🕊 Левитация: —';
+    mage.vy = 0;
+    mage.onGround = false;
+    G.landingGrace = 0.6;   // 0.6с неуязвимости на приземление
+  } else {
+    document.getElementById('levitate').textContent = '🕊 Левитация: ' + G.levitateTime.toFixed(1) + 'с';
+  }
+}
+if (G.landingGrace > 0){
+  G.landingGrace -= dt;
+  if (G.landingGrace < 0) G.landingGrace = 0;
+}
+
+  if (G.ghostTime > 0){
+    G.ghostTime -= dt;
+    if (G.ghostTime <= 0){
+      G.ghostTime = 0;
+      document.getElementById('ghost').textContent = '👻 Бесплотный: —';
+    } else {
+      document.getElementById('ghost').textContent = '👻 Бесплотный: ' + G.ghostTime.toFixed(1) + 'с';
+    }
+  }
+
+  if (G.magnetTime > 0){
+    G.magnetTime -= dt;
+    if (G.magnetTime <= 0){
+      G.magnetTime = 0;
+      document.getElementById('magnet').textContent = '🧲 Магнифико: —';
+    } else {
+      document.getElementById('magnet').textContent = '🧲 Магнифико: ' + G.magnetTime.toFixed(1) + 'с';
+    }
+  }
+
+  G.spawnTimer -= dt;
+  if (G.spawnTimer <= 0){
+    spawnObstacle();
+  const base = Math.max(1.6, 2.6 - G.distance*0.0003);
+G.spawnTimer = 2.0 + Math.random()*0.8;
+  }
+
+  G.coinTimer -= dt;
+  if (G.coinTimer <= 0){
+    spawnCoin();
+    if (Math.random()<0.4) setTimeout(spawnCoin, 160);
+    G.coinTimer = 1.4 + Math.random()*1.6;
+  }
+
+  updateTornadoes(dt);
+
+  // Препятствия: столкновение → конфуз (если не левитируем, не призрак, не неуязвим)
+  const invincible = G.ghostTime > 0 || G.levitateTime > 0 || G.invulnTime > 0 || G.confuseTime > 0;
+  for (let i=G.obstacles.length-1;i>=0;i--){
+    const o = G.obstacles[i];
+    o.x -= G.speed*dt;
+
+    // Учёт пройденных препятствий (для очков)
+    if (!o.passed && o.x + o.w/2 < mage.x){
+      o.passed = true;
+    }
+
+    if (o.x + o.w < -20){ G.obstacles.splice(i,1); continue; }
+
+    if (G.running && !G.over && !invincible){
+      const mageLeft = mage.x - 14;
+      const mageRight = mage.x + 14;
+      const mageBottom = G.groundY() + mage.y;
+      const mageTop = mageBottom - 78 + mage.y;
+      const oLeft = o.x - o.w/2;
+      const oRight = o.x + o.w/2;
+      const oBottom = o.y;
+      const oTop = o.y - o.h;
+      if (mageRight > oLeft && mageLeft < oRight && mageBottom > oTop && mageTop < oBottom){
+        applyConfusion();
+      }
+    }
+  }
+
+  const magnetActive = G.magnetTime > 0;
+  for (let i=G.coinList.length-1;i>=0;i--){
+    const c = G.coinList[i];
+
+    if (magnetActive && G.running && !G.over){
+      const mageCX = mage.x;
+      const mageCY = G.groundY() + mage.y - 40;
+      const dx = mageCX - c.x;
+      const dy = mageCY - c.y;
+      const dist = Math.hypot(dx, dy);
+      if (dist > 1 && dist < 500){
+        const force = 900 / Math.max(dist, 40);
+        c.x += (dx / dist) * force * dt * 60;
+        c.y += (dy / dist) * force * dt * 60;
+      }
+    }
+
+    c.x -= G.speed*dt;
+    if (c.x + c.r < -20){ G.coinList.splice(i,1); continue; }
+    if (G.running && !G.over){
+      const dx = c.x - mage.x;
+      const dy = c.y - (G.groundY() + mage.y - 40);
+      if (dx*dx + dy*dy < 34*34){
+        G.coins++;
+        document.getElementById('coins').textContent = G.coins;
+        for (let k=0;k<12;k++){
+          G.particles.push({
+            x:c.x, y:c.y,
+            vx:(Math.random()*2-1)*180, vy:(Math.random()*2-1)*180-60,
+            life:0.4+Math.random()*0.3, max:0.7,
+            color:'#facc15', size:2+Math.random()*2, grav:200
+          });
+        }
+        G.coinList.splice(i,1);
+      }
+    }
+  }
+
+  for (let i=G.particles.length-1;i>=0;i--){
+    const p = G.particles[i];
+    p.vy += (p.grav||300)*dt;
+    p.x += p.vx*dt; p.y += p.vy*dt;
+    p.life -= dt;
+    if (p.life <= 0) G.particles.splice(i,1);
+  }
+
+  if (G.flashAlpha > 0){
+    G.flashAlpha -= dt*2.5;
+    if (G.flashAlpha < 0) G.flashAlpha = 0;
+    document.getElementById('flash').style.background = G.flashColor;
+    document.getElementById('flash').style.opacity = G.flashAlpha*0.5;
+  } else {
+    document.getElementById('flash').style.opacity = 0;
+  }
+
+  if (G.damageFlash > 0) G.damageFlash -= dt*3;
+  if (G.shake > 0) G.shake -= dt*4;
+
+  document.getElementById('score').textContent = G.score;
+  document.getElementById('coins').textContent = G.coins;
+  document.getElementById('dist').textContent = Math.floor(G.distance/10);
+}
+
+function draw(){
+  ctx.save();
+  if (G.shake > 0){
+    ctx.translate((Math.random()-0.5)*G.shake*8, (Math.random()-0.5)*G.shake*8);
+  }
+  if (G.rewindActive){
+    ctx.translate((Math.random()-0.5)*4, (Math.random()-0.5)*4);
+  }
+  drawBackground();
+  drawGround();
+
+   for (const td of G.tornadoes) drawTornado(td);
+
+  // Золотой луч — под монетами/препятствиями/магом, но над фоном
+  drawHealBeam();
+
+  for (const c of G.coinList) drawCoin(c);
+  for (const o of G.obstacles) drawObstacle(o);
+  drawParticles();
+  drawMage();
+  ctx.restore();
+
+  if (G.rewindActive){
+    ctx.save();
+    ctx.globalAlpha = 0.15 + Math.sin(G.t*20)*0.1;
+    ctx.strokeStyle = '#7dd3fc';
+    ctx.lineWidth = 1;
+    for (let y=0; y<H; y+=12){
+      ctx.beginPath();
+      ctx.moveTo(0, y + Math.sin(G.t*8 + y)*2);
+      ctx.lineTo(W, y + Math.sin(G.t*8 + y + 1)*2);
+      ctx.stroke();
+    }
+    ctx.restore();
+  }
+}
+
+/* ================= ИГРОВОЙ ЦИКЛ ================= */
+let last = performance.now();
+function loop(now){
+  const dt = Math.min((now - last)/1000, 0.05);
+  last = now;
+  G.t += dt;
+  if (G.running && !G.over){
+    updateWorld(dt);
+    updateMage(dt);
+  } else {
+    updateMage(dt*0.5);
+    if (G.over){
+      for (const p of G.particles){ p.vy += 300*dt; p.x += p.vx*dt; p.y += p.vy*dt; p.life -= dt; }
+      G.particles = G.particles.filter(p=>p.life>0);
+    }
+  }
+  draw();
+  requestAnimationFrame(loop);
+}
+
+/* ================= СТАРТ / КОНЕЦ ================= */
+function startGame(){
+  G.running = true; G.over = false;
+  G.t = 0; G.distance = 0; G.score = 0; G.coins = 0;
+  G.obstacles = []; G.coinList = []; G.particles = [];
+  G.spawnTimer = 1.4; G.coinTimer = 1.0;
+  G.ghostTime = 0; G.magnetTime = 0; G.levitateTime = 0;
+  G.levitateHeight = 0; G.levitateTarget = 0;
+  G.shake = 0;
+  G.healBeamTime = 0;
+  G.history = [];
+  G.rewindActive = false;
+  G.tornadoes = [];
+  G.health = G.maxHealth;
+  G.confuseTime = 0;
+  G.invulnTime = 0;
+  G.damageFlash = 0;
+healCooldown = 0;
+  mage.x = Math.max(90, W*0.18);
+  mage.y = 0; mage.vy = 0; mage.onGround = true; mage.jumps = 0;
+  mage.castPose = 0;
+  document.getElementById('score').textContent = '0';
+  document.getElementById('coins').textContent = '0';
+  document.getElementById('dist').textContent = '0';
+  document.getElementById('ghost').textContent = '👻 Бесплотный: —';
+  document.getElementById('magnet').textContent = '🧲 Магнифико: —';
+  document.getElementById('levitate').textContent = '🕊 Левитация: —';
+  document.getElementById('overlay').style.display = 'none';
+  updateHealthUI();
+  last = performance.now();
+}
+
+function gameOver(){
+  G.over = true; G.running = false;
+  G.shake = 1;
+  startCast('destroy');
+  document.getElementById('overlay').style.display = 'flex';
+  document.getElementById('overlay').innerHTML = `
+    <h1>Игра окончена</h1>
+    <p>Очки: <span class="key">${G.score}</span></p>
+    <p>Монеты: <span class="key">${G.coins}</span></p>
+    <p>Пройдено: <span class="key">${Math.floor(G.distance/10)} м</span></p>
+    <button id="restart-btn">Играть снова</button>
+  `;
+  document.getElementById('restart-btn').onclick = ()=>{ startGame(); };
+  if (navigator.vibrate) navigator.vibrate([200, 100, 200]);
+}
+
+/* ================= УПРАВЛЕНИЕ ================= */
+function onTapJump(e){
+  if (e) e.preventDefault();
+  if (!G.running || G.over) return;
+  jump();
+}
+window.addEventListener('keydown', e=>{
+  if (e.code==='Space' || e.code==='ArrowUp'){ onTapJump(e); }
+  if (e.code==='KeyG'){ castGhost(); }
+  if (e.code==='KeyD'){ castDestroy(); }
+  if (e.code==='KeyH'){ castHeal(); }
+  if (e.code==='KeyM'){ castMagnet(); }
+  if (e.code==='KeyT'){ castTempus(); }
+  if (e.code==='KeyR'){ castTornado(); }
+  if (e.code==='KeyL'){ castLevitate(); }
+});
+cvs.addEventListener('touchstart', e=>{
+  const now = performance.now();
+  if (now - (cvs._lastTap||0) < 260){ onTapJump(e); cvs._lastTap = 0; }
+  else { cvs._lastTap = now; setTimeout(()=>{ if (cvs._lastTap===now){ onTapJump(e); cvs._lastTap=0; } }, 260); }
+}, {passive:false});
+cvs.addEventListener('mousedown', onTapJump);
+
+/* ================= ГОЛОС ================= */
+let recognition = null;
+let listening = false;
+let healCooldown = 0;
+let lastVoice = '';
+let lastVoiceTime = 0;
+let ghostCooldown = 0, destroyCooldown = 0, magnetCooldown = 0, tempusCooldown = 0, tornadoCooldown = 0, levitateCooldown = 0;
+
+function initRecognition(){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR){
+    document.getElementById('mic-btn').textContent = '🎤 Распознавание недоступно';
+    return null;
+  }
+  const rec = new SR();
+  rec.lang = 'ru-RU';
+  rec.continuous = true;
+  rec.interimResults = true;
+  rec.maxAlternatives = 1;
+
+  rec.onresult = (e)=>{
+    let text = '';
+    for (let i = e.resultIndex; i < e.results.length; i++){
+      text += e.results[i][0].transcript + ' ';
+    }
+    const clean = text.toLowerCase().replace(/[^а-яёa-z\s]/g,' ').replace(/\s+/g,' ').trim();
+    if (!clean) return;
+    const now = performance.now();
+    if (clean === lastVoice && now - lastVoiceTime < 600) return;
+    lastVoice = clean; lastVoiceTime = now;
+    handleVoice(clean);
+  };
+
+  rec.onerror = (e)=>{
+    if (e.error === 'not-allowed' || e.error === 'service-not-allowed'){
+      document.getElementById('mic-btn').textContent = '🎤 Нет доступа';
+      listening = false;
+    }
+  };
+
+  rec.onend = ()=>{
+    if (listening) setTimeout(()=>{ if (listening){ try{ rec.start(); }catch(_){} } }, 150);
+  };
+  return rec;
+}
+
+async function requestMicAndStart(){
+  const startBtn = document.getElementById('start-btn');
+  if (startBtn){ startBtn.disabled = true; startBtn.textContent = 'Запрашиваю микрофон...'; }
+  if (!recognition) recognition = initRecognition();
+  try {
+    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+    stream.getTracks().forEach(t => t.stop());
+    if (recognition){
+      try {
+        recognition.start();
+        listening = true;
+        micBtn.classList.add('listening');
+        micBtn.textContent = '🎙 Слушаю...';
+      } catch(err){ console.warn(err); }
+    }
+  } catch(err){
+    micBtn.textContent = '🎤 Микрофон недоступен';
+  }
+  startGame();
+}
+
+
+function castHeal(){
+  if (!G.running || G.over) return;
+  G.healBeamTime = HEAL_BEAM_DURATION;
+  if (G.health >= G.maxHealth){
+    showSpellName('КОНТРА ДОЛОРЕМ', '#f9a8d4');
+    document.getElementById('spell').textContent = '❤️ Уже полное здоровье!';
+    setTimeout(()=>{ document.getElementById('spell').textContent = '✨ Заклинание: готово'; }, 1200);
+    return;
+  }
+  G.health = Math.min(G.maxHealth, G.health + 1);
+  startCast('heal');
+  showSpellName('КОНТРА ДОЛОРЕМ', '#f9a8d4');
+  document.getElementById('spell').textContent = '❤️ +1 сердце!';
+  setTimeout(()=>{ document.getElementById('spell').textContent = '✨ Заклинание: готово'; }, 1400);
+  updateHealthUI();
+
+  // Целебные частицы
+  for (let i=0;i<40;i++){
+    G.particles.push({
+      x: mage.x + (Math.random()*40-20),
+      y: G.groundY() + mage.y - 40 + (Math.random()*40-20),
+      vx: (Math.random()*2-1)*120,
+      vy: -60 - Math.random()*160,
+      life: 0.6+Math.random()*0.6, max: 1.2,
+      color: Math.random()<0.5 ? '#f9a8d4' : '#f472b6',
+      size: 2+Math.random()*3, grav: -40
+    });
+  }
+  if (navigator.vibrate) navigator.vibrate([20,30,20,30,80]);
+}
+
+function handleVoice(txt){
+  if (!txt) return;
+  const now = performance.now();
+ if (/(контра|кантра|contra)/.test(txt) && /(долорем|долорэм|долор|dolorem|dolor)/.test(txt)){
+    if (now - healCooldown > 1500){ healCooldown = now; castHeal(); }
+  }
+  if (/(фокус|покус|focus|pokus)/.test(txt)){
+    if (now - ghostCooldown > 1500){ ghostCooldown = now; castGhost(); }
+  }
+  if (/(абракадабра|абракадабр|абракадаб|абракада|абракад|кадабра|abracadabra)/.test(txt)){
+    if (now - destroyCooldown > 1500){ destroyCooldown = now; castDestroy(); }
+  }
+  if (/(магнифико|магнифик|магнифи|магни|magnifico|magnific|magnifi)/.test(txt)){
+    if (now - magnetCooldown > 1500){ magnetCooldown = now; castMagnet(); }
+  }
+  if (/(темпус|темпу|темп|tempus|tempu|tempor)/.test(txt)){
+    if (now - tempusCooldown > 1500){ tempusCooldown = now; castTempus(); }
+  }
+  if (/(торнадо|тарнадо|торнад|tornado|tornad|torn)/.test(txt)){
+    if (now - tornadoCooldown > 1500){ tornadoCooldown = now; castTornado(); }
+  }
+  if (/(левитаци|левитац|левита|левит|levitat|levita|levit)/.test(txt)){
+    if (now - levitateCooldown > 1500){ levitateCooldown = now; castLevitate(); }
+  }
+}
+
+function castGhost(){
+  if (!G.running || G.over) return;
+  G.ghostTime = 15;
+  startCast('ghost');
+  showSpellName('ФОКУС ПОКУС', '#7dd3fc');
+  document.getElementById('ghost').textContent = '👻 Бесплотный: 15.0с';
+  document.getElementById('spell').textContent = '✨ Фокус Покус!';
+  setTimeout(()=>{ document.getElementById('spell').textContent = '✨ Заклинание: готово'; }, 1400);
+  if (navigator.vibrate) navigator.vibrate(60);
+}
+
+function castDestroy(){
+  if (!G.running || G.over) return;
+  startCast('destroy');
+  showSpellName('АБРАКАДАБРА', '#fbbf24');
+  document.getElementById('spell').textContent = '💥 Абракадабра!';
+  setTimeout(()=>{ document.getElementById('spell').textContent = '✨ Заклинание: готово'; }, 1200);
+  let target = null;
+  for (const o of G.obstacles){
+    if (o.x + o.w/2 > mage.x - 10){
+      if (!target || o.x < target.x) target = o;
+    }
+  }
+  if (target){
+    G.shake = 0.8;
+    for (let i=0;i<40;i++){
+      G.particles.push({
+        x:target.x, y:target.y - target.h/2,
+        vx:(Math.random()*2-1)*380, vy:(Math.random()*2-1)*380 - 60,
+        life:0.5+Math.random()*0.6, max:1.1,
+        color: Math.random()<0.5 ? '#fbbf24' : '#f97316',
+        size:2+Math.random()*4, grav:300
+      });
+    }
+    const idx = G.obstacles.indexOf(target);
+    if (idx>=0) G.obstacles.splice(idx,1);
+  }
+  if (navigator.vibrate) navigator.vibrate([40,30,80]);
+}
+
+function castMagnet(){
+  if (!G.running || G.over) return;
+  G.magnetTime = 10;
+  startCast('magnet');
+  showSpellName('МАГНИФИКО', '#c084fc');
+  document.getElementById('magnet').textContent = '🧲 Магнифико: 10.0с';
+  document.getElementById('spell').textContent = '🧲 Магнифико!';
+  setTimeout(()=>{ document.getElementById('spell').textContent = '✨ Заклинание: готово'; }, 1200);
+  if (navigator.vibrate) navigator.vibrate([30,20,30,20,60]);
+}
+
+function castTempus(){
+  if (!G.running || G.over) return;
+  startCast('tempus');
+  showSpellName('ТЕМПУС', '#38bdf8');
+  document.getElementById('spell').textContent = '⏳ Темпус!';
+  setTimeout(()=>{ document.getElementById('spell').textContent = '✨ Заклинание: готово'; }, 1200);
+  rewindTime(7);
+  if (navigator.vibrate) navigator.vibrate([60,40,60,40,120]);
+}
+
+function castTornado(){
+  if (!G.running || G.over) return;
+  startCast('tornado');
+  showSpellName('ТОРНАДО', '#a3e635');
+  document.getElementById('spell').textContent = '🌪 Торнадо!';
+  setTimeout(()=>{ document.getElementById('spell').textContent = '✨ Заклинание: готово'; }, 1400);
+  spawnTornado(mage.x + 30, W + 200);
+  if (navigator.vibrate) navigator.vibrate([30,30,30,30,150]);
+}
+
+function castLevitate(){
+  if (!G.running || G.over) return;
+  G.levitateTime = 10;
+  G.levitateTarget = -260;
+  G.levitateHeight = 260;
+  startCast('levitate');
+  showSpellName('ЛЕВИТАЦИЯ', '#fde68a');
+  document.getElementById('levitate').textContent = '🕊 Левитация: 10.0с';
+  document.getElementById('spell').textContent = '🕊 Левитация!';
+  setTimeout(()=>{ document.getElementById('spell').textContent = '✨ Заклинание: готово'; }, 1400);
+
+  for (let i=0;i<40;i++){
+    G.particles.push({
+      x: mage.x + (Math.random()*40-20),
+      y: G.groundY() + mage.y,
+      vx: (Math.random()*2-1)*80,
+      vy: -80 - Math.random()*180,
+      life: 0.6+Math.random()*0.6, max: 1.2,
+      color: Math.random()<0.5 ? '#fef3c7' : '#fde68a',
+      size: 2+Math.random()*3, grav: -60
+    });
+  }
+  if (navigator.vibrate) navigator.vibrate([20,30,20,30,20,30,100]);
+}
+
+/* ================= КНОПКА МИКРОФОНА ================= */
+const micBtn = document.getElementById('mic-btn');
+micBtn.addEventListener('click', ()=>{
+  if (!recognition){ recognition = initRecognition(); if (!recognition) return; }
+  if (!listening){
+    try {
+      recognition.start();
+      listening = true;
+      micBtn.classList.add('listening');
+      micBtn.textContent = '🎙 Слушаю...';
+    } catch(err){ micBtn.textContent = '🎤 Ошибка запуска'; }
+  } else {
+    listening = false;
+    try{ recognition.stop(); }catch(_){}
+    micBtn.classList.remove('listening');
+    micBtn.textContent = '🎤 Включить микрофон';
+  }
+});
+
+/* ================= СТАРТ ================= */
+document.getElementById('start-btn').onclick = async ()=>{ await requestMicAndStart(); };
+
+for (let i=0;i<70;i++){
+  G.stars.push({
+    x: Math.random()*W, y: Math.random()*H*0.6,
+    s: Math.random()<0.15 ? 2 : 1,
+    a: 0.3 + Math.random()*0.7,
+    tw: 1 + Math.random()*3,
+    ph: Math.random()*6
+  });
+}
+window.addEventListener('resize', ()=>{
+  G.stars = [];
+  for (let i=0;i<70;i++){
+    G.stars.push({
+      x: Math.random()*W, y: Math.random()*H*0.6,
+      s: Math.random()<0.15 ? 2 : 1,
+      a: 0.3 + Math.random()*0.7,
+      tw: 1 + Math.random()*3,
+      ph: Math.random()*6
+    });
+  }
+  mage.x = Math.max(90, W*0.18);
+});
+
+mage.x = Math.max(90, W*0.18);
+loop(performance.now());
+</script>
+</body>
+</html>
